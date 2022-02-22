@@ -1,0 +1,73 @@
+```{r}
+#install.packages
+
+library("reshape2")
+library("recommenderlab")
+library("dplyr")
+library("tidyr")
+library("ggplot2")
+library("vegan")
+library("coop")
+library("bench")
+library("gridExtra")
+```
+
+
+# Content-based Movie Recommender
+
+
+
+## Erzeugung von Film- & Nutzerprofilen
+
+
+1.MovieLense Daten einlesen
+```{r}
+data("MovieLense")
+MovieLense
+```
+2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
+3.Dimension der User-Liked-Items Matrix prüfen und ausgeben.
+4.Movie-Genre Matrix für alle Filme erzeugen.
+5.Dimension der Movie-Genre Matrix prüfen und ausgeben.
+6.Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
+7.User-Genre-Profil Matrix mit Nutzerprofilen im Genre-Vektorraum erzeugen.
+8.Dimension der User-Genre-Profil Matrix prüfen und ausgeben.
+9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
+
+
+
+
+
+## Ähnlichkeit von Nutzern und Filmen
+
+1.Cosinus-Ähnlichkeit zwischen User-Genre- und Movie-Genre-Matrix berechnen.
+2.Dimension der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen prüfen uns ausgeben.
+3.5-Zahlen Statistik für Matrix der Cosinus-Ähnlichkeiten prüfen uns ausgeben.
+4.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
+5.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot für Nutzer “241”, “414”, “477”, “526”, “640” und “710” visualisieren.
+
+
+
+
+## Empfehlbare Filme
+
+1.Bewertete Filme maskieren, d.h. “Negativabzug” der User-Items Matrix erzeugen, um anschliessend Empfehlungen herzuleiten.
+2.Zeilensumme des “Negativabzuges” der User-Items Matrix für die User “5”, “25”, “50” und “150” ausgeben.
+3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
+
+
+
+
+## Top-N Empfehlungen
+
+1.Matrix für Bewertung aller Filme durch element-weise Multiplikation der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen und “Negativabzug” der User-Items Matrix erzeugen.
+2.Dimension der Matrix für die Bewertung aller Filme prüfen.
+3.Top-20 Listen pro Nutzer extrahieren.
+4.Länge der Top-20 Listen pro Nutzer prüfen.
+5.Verteilung der minimalen Ähnlichkeit für Top-N Listen für N = 10, 20, 50 und 100 für alle Nutzer visuell vergleichen.
+6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
+7.Für Nutzer “133” und “555” Profil mit Top-N Empfehlungen für N = 20, 30, 40, 50 analysieren, visualisieren und diskutieren.
+
+
+
+
