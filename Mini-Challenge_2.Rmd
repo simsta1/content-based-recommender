@@ -52,7 +52,7 @@ dim(MovieLense_binary)
 as(MovieLense_binary, "data.frame")
 
 movie_genre <- MovieLenseMeta %>%
-  select(-c(url, year))
+  dplyr::select(-c(url, year))
 ```
 
 
@@ -64,30 +64,92 @@ dim(movie_genre)
 
 
 6.Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
-```{r}
 
+```{r}
+tmp <- movie_genre %>%
+  dplyr::select(-title) %>%
+  rowSums()
+
+hist(tmp, xlim=c(0,10), 
+     col="lightblue", xlab="Number of Genres", 
+     ylab="Count", main="Distribution of Ratings per Movie" )
+```
+**Beschreibung:**
+
+Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. 
+
+
+```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
 
 tmp <- tmp %>%
-  filter(value > 0) %>%
-  group_by(genre) %>%
-  count() %>%
-  arrange(n)
+  dplyr::filter(value > 0) %>%
+  dplyr::group_by(genre) %>%
+  dplyr::count() %>%
+  dplyr::arrange(n)
 
 tmp$genre <- factor(tmp$genre, levels = tmp$genre)
 
 ggplot2::ggplot(tmp, ggplot2::aes(x = n, y = genre, label = n)) +
   ggplot2::geom_segment(ggplot2::aes(x = 0, y = genre, xend = n, yend = genre), color = "grey50") +
-  ggplot2::geom_point(size=3, color = "red") +
+  ggplot2::geom_point(size=3, color = "lightblue") +
   ggplot2::geom_text(nudge_x =25) +
-  ggplot2::theme_bw()
+  ggplot2::theme_bw() + 
+  ggplot2::xlab("Counts")
 
 ```
-
+**Beschreibung:**
+Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten
+Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass 
+gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind.
 
 
 
 7.User-Genre-Profil Matrix mit Nutzerprofilen im Genre-Vektorraum erzeugen.
+```{r}
+NORMALIZED_BY_VIEWS <- TRUE
+
+# Convert both into matrices
+user_movie_mat <- as(MovieLense_binary, "matrix")
+
+
+movie_genre_mat <- movie_genre %>%
+  dplyr::select(-title) %>%
+  as.matrix()
+
+# Create user genre profile
+if (NORMALIZED_BY_VIEWS){
+  user_genre_mat <- ((user_movie_mat / as.vector(rowSums(user_movie_mat)))  %*% movie_genre_mat)
+} else {
+  user_genre_mat <- user_movie_mat %*% movie_genre_mat
+}
+
+
+# Test
+check_both_matrices <- test_that(
+  "Check matrices types", {
+    expect_equal(class(user_movie_mat), class(movie_genre_mat))
+  }
+)
+
+check_mat_dim <- test_that(
+  "Check mat dims", {
+    expect_equal(dim(user_movie_mat)[2], dim(movie_genre)[1])
+  }
+)
+
+check_mat_dim_out <- test_that(
+  "Check mat dims output", {
+    expect_equal(dim(user_genre_mat), c(dim(user_movie_mat)[1], dim(movie_genre_mat)[2]))
+  }
+)
+```
+Achtung! Die Werte können grössere Werte als 1 pro User annehmen trotz Normalisierung der Gesamtviews per User, da gewisse Filme über mehrere
+Genres verfügen.
+
+
+
+
 8.Dimension der User-Genre-Profil Matrix prüfen und ausgeben.
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
 
