@@ -1,5 +1,11 @@
 ```{r}
-#install.packages
+#install packages
+library("renv")
+library("testthat")
+renv::restore()
+
+```
+copy in separate chunk to install if not yet installed
 
 library("reshape2")
 library("recommenderlab")
@@ -10,18 +16,9 @@ library("vegan")
 library("coop")
 library("bench")
 library("gridExtra")
-library("testthat")
-
-renv::init()
-
-
-renv::restore()
-```
 
 
 # Content-based Movie Recommender
-
-
 
 ## Erzeugung von Film- & Nutzerprofilen
 
@@ -45,9 +42,51 @@ check_binary_matrix <- test_that(
 ```
 
 3.Dimension der User-Liked-Items Matrix prüfen und ausgeben.
+```{r}
+dim(MovieLense_binary)
+```
+
+
 4.Movie-Genre Matrix für alle Filme erzeugen.
+```{r}
+as(MovieLense_binary, "data.frame")
+
+movie_genre <- MovieLenseMeta %>%
+  select(-c(url, year))
+```
+
+
+
 5.Dimension der Movie-Genre Matrix prüfen und ausgeben.
+```{r}
+dim(movie_genre)
+```
+
+
 6.Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
+```{r}
+
+tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
+
+tmp <- tmp %>%
+  filter(value > 0) %>%
+  group_by(genre) %>%
+  count() %>%
+  arrange(n)
+
+tmp$genre <- factor(tmp$genre, levels = tmp$genre)
+
+ggplot2::ggplot(tmp, ggplot2::aes(x = n, y = genre, label = n)) +
+  ggplot2::geom_segment(ggplot2::aes(x = 0, y = genre, xend = n, yend = genre), color = "grey50") +
+  ggplot2::geom_point(size=3, color = "red") +
+  ggplot2::geom_text(nudge_x =25) +
+  ggplot2::theme_bw()
+
+```
+
+
+
+
 7.User-Genre-Profil Matrix mit Nutzerprofilen im Genre-Vektorraum erzeugen.
 8.Dimension der User-Genre-Profil Matrix prüfen und ausgeben.
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
