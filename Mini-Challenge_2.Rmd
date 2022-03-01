@@ -1,14 +1,8 @@
 ```{r}
 #install packages
-library("renv")
-library("testthat")
-renv::restore()
-
-```
-copy in separate chunk to install if not yet installed
-
 library("reshape2")
 library("recommenderlab")
+library("knitr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -16,6 +10,18 @@ library("vegan")
 library("coop")
 library("bench")
 library("gridExtra")
+library("renv")
+library("testthat")
+library("knitr")
+
+
+#renv::snapshot()
+#renv::restore()
+
+```
+copy in separate chunk to install if not yet installed
+
+
 
 
 # Content-based Movie Recommender
@@ -30,7 +36,10 @@ MovieLense
 ```
 2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
 ```{r}
+########### Param ##########
 MINIMUM_RATING = 1
+##############################
+
 MovieLense_binary <- recommenderlab::binarize(x = MovieLense, minRating = MINIMUM_RATING)
 
 # Test
@@ -49,8 +58,6 @@ dim(MovieLense_binary)
 
 4.Movie-Genre Matrix für alle Filme erzeugen.
 ```{r}
-as(MovieLense_binary, "data.frame")
-
 movie_genre <- MovieLenseMeta %>%
   dplyr::select(-c(url, year))
 ```
@@ -107,8 +114,10 @@ gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Fil
 
 7.User-Genre-Profil Matrix mit Nutzerprofilen im Genre-Vektorraum erzeugen.
 ```{r}
+########## Param ##########
 NORMALIZED_BY_VIEWS <- TRUE
 
+###########################
 # Convert both into matrices
 user_movie_mat <- as(MovieLense_binary, "matrix")
 
@@ -148,10 +157,18 @@ Achtung! Die Werte können grössere Werte als 1 pro User annehmen trotz Normali
 Genres verfügen.
 
 
-
-
 8.Dimension der User-Genre-Profil Matrix prüfen und ausgeben.
+```{r}
+dim(user_genre_mat)
+```
+
+
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
+```{r}
+
+
+
+```
 
 
 
