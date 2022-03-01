@@ -10,6 +10,12 @@ library("vegan")
 library("coop")
 library("bench")
 library("gridExtra")
+library("testthat")
+
+renv::init()
+
+
+renv::restore()
 ```
 
 
@@ -26,6 +32,18 @@ data("MovieLense")
 MovieLense
 ```
 2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
+```{r}
+MINIMUM_RATING = 1
+MovieLense_binary <- recommenderlab::binarize(x = MovieLense, minRating = MINIMUM_RATING)
+
+# Test
+check_binary_matrix <- test_that(
+  "Check binary matrix", {
+    expect_equal(class(as(MovieLense_binary, "matrix")[1]), "logical")
+  }
+)
+```
+
 3.Dimension der User-Liked-Items Matrix prüfen und ausgeben.
 4.Movie-Genre Matrix für alle Filme erzeugen.
 5.Dimension der Movie-Genre Matrix prüfen und ausgeben.
