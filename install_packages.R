@@ -1,0 +1,12 @@
+# Install packages
+install.packages("reshape2")
+install.packages("recommenderlab")
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("ggplot2")
+install.packages("vegan")
+install.packages("coop")
+install.packages("bench")
+install.packages("gridExtra")
+install.packages("testthat")
+install.packages("knitr")
