@@ -19,7 +19,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['3.6.3', '4.1.1']
+        r-version: ['3.6.3']
 
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,6 @@ jobs:
         run: |
           install.packages("renv")
           renv::restore()
-        shell: Rscript {0}
-      - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
-        shell: Rscript {0}
+      - name: Check rmd 
+        run : |
+          Rscript -e ./test/test_run_rmd.R
