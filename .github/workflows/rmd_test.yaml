@@ -35,6 +35,7 @@ jobs:
         run: |
           if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
           install.packages("testthat")
+          install.packages("knitr")
           renv::restore()    
         
       - name: Run tests
