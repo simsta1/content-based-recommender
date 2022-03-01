@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, master]
 
-name: R-CMD-check
+name: rmd test
 
 jobs:
   tests:
@@ -15,7 +15,9 @@ jobs:
       - uses: actions/checkout@v1
       - uses: r-lib/actions/setup-r@v1
       - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install dependencies
-        run: Rscript -e "install.packages(c('reshape2', 'recommenderlab', 'dplyr', 'tidyr', 'ggplot2', 'vegan', 'coop', 'bench', 'gridExtra', 'testthat'))"
+      - name: Install and activate renv
+        run: |
+          install.packages("renv")
+          renv::activate()
       - name: Run tests
         run: Rscript -e "source('tests/testthat.R')"
