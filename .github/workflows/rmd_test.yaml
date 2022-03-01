@@ -9,15 +9,34 @@ on:
 name: rmd test
 
 jobs:
+
   tests:
+  
     runs-on: ubuntu-latest
+    
+    env:
+      RENV_PATHS_ROOT: ~/.local/share/renv
+
     steps:
       - uses: actions/checkout@v1
+      
       - uses: r-lib/actions/setup-r@v1
+     
       - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install and activate renv
+    
+      - name: Cache packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.RENV_PATHS_ROOT }}
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-   
+            
+      - name: Restore packages
+        shell: Rscript {0}
         run: |
-          install.packages("renv")
-          renv::activate()
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore()    
+        
       - name: Run tests
         run: Rscript -e "source('tests/testthat.R')"
