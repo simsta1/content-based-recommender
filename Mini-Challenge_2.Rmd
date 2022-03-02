@@ -1,8 +1,14 @@
 ```{r}
+
+INSTALL_LIBS = FALSE
+
+if (INSTALL_LIBS){
+  source("install_packages.R")
+}
+
 #install packages
 library("reshape2")
 library("recommenderlab")
-library("knitr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -12,11 +18,17 @@ library("bench")
 library("gridExtra")
 library("renv")
 library("testthat")
-library("knitr")
+library("devtools")
 
 
-#renv::snapshot()
-#renv::restore()
+#install.packages("devtools", type = "win.binary")
+
+devtools::check()
+
+renv::snapshot()
+renv::restore()
+
+
 
 ```
 copy in separate chunk to install if not yet installed
