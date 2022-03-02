@@ -34,15 +34,14 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-          
-      - name: Install Knitr RMD 
-        run: |
-          install.packages("knitr")
-          source('knit_rmd.R)
-        shell: Rscript {0}
       
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
           extra-packages: rcmdcheck
+          
+      - name: Run knit_rmd 
+        run: |
+          source('knit_rmd.R)
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
