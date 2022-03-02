@@ -34,11 +34,11 @@ jobs:
         shell: Rscript {0}
         run: |
           if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          echo "---------------------------- Renv Setup Done -------------------------------"
+          Rscript -e 'print("---------------------------- Renv Setup Done -------------------------------")'
           install.packages("testthat")
-          echo "---------------------------- testthat installed ------------------------------"
+          Rscript -e 'print"---------------------------- testthat installed ------------------------------")'
           install.packages("knitr")
-          echo "------------------------------ knitr installed -----------------------------"
+          Rscript -e 'print("------------------------------ knitr installed -----------------------------")'
           renv::restore()    
         
       - name: Run tests
