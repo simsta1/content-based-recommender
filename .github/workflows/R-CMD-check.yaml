@@ -36,10 +36,10 @@ jobs:
           use-public-rspm: true
           
       - name: Install Knitr RMD 
-      run: |
-        install.packages("knitr")
-        source('knit_rmd.R)
-      shell: Rscript {0}
+        run: |
+          install.packages("knitr")
+          source('knit_rmd.R)
+        shell: Rscript {0}
       
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
