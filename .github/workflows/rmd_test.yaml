@@ -42,7 +42,7 @@ jobs:
         run: Rscript -e "source('tests/knit_rmd.R')"
         
       - name: run test from testthat folder
-        run: Rscript -e "source('tests/testthat/test_rmd.R)"
+        run: Rscript -e "source('tests/testthat/test_mc2.R)"
         
       - name: Run tests
         run: Rscript -e "source('tests/testthat.R')"
