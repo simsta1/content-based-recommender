@@ -1,5 +1,5 @@
 # content-based-recommender
 -------------
-[![RMD-Test](https://github.com/SimonStaehli/content-based-recommender/actions/workflows/rmd_test.yaml/badge.svg)](https://github.com/SimonStaehli/content-based-recommender/actions/workflows/rmd_test.yaml)
+[![R-CMD-check](https://github.com/SimonStaehli/content-based-recommender/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SimonStaehli/content-based-recommender/actions/workflows/R-CMD-check.yaml)
 -------------
 Implementation of Content-Based Recommender System for the study course Recommender Systems.
