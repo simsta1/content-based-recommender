@@ -35,11 +35,12 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
           
-      - name: Knitr RMD doc and save it in test folder
+      - name: Install Knitr RMD 
         shell: Rscript {0}
-        run: |
-        install.packages("knitr")
-        Rscript -e "source('tests/knit_rmd.R)" 
+        run: install.packages("knitr")
+        
+      - name: run knit rmd
+        run: Rscript -e "source('tests/knit_rmd.R)" 
       
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
