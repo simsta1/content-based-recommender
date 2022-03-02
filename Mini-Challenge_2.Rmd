@@ -1,15 +1,12 @@
 ```{r}
-# Set flag to true if packages should be installed
+
 INSTALL_LIBS = FALSE
 
 if (INSTALL_LIBS){
   source("install_packages.R")
 }
 
-# Restore environment from lock file
-renv::restore()
-
-# Import packages
+#install packages
 library("reshape2")
 library("recommenderlab")
 library("dplyr")
@@ -23,7 +20,15 @@ library("renv")
 library("testthat")
 library("devtools")
 
-#renv::snapshot()
+
+#install.packages("devtools", type = "win.binary")
+
+devtools::check()
+
+renv::snapshot()
+renv::restore()
+
+
 
 ```
 copy in separate chunk to install if not yet installed
@@ -44,7 +49,7 @@ MovieLense
 2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
 ```{r}
 ########### Param ##########
-MINIMUM_RATING = 3
+MINIMUM_RATING = 1
 ##############################
 
 MovieLense_binary <- recommenderlab::binarize(x = MovieLense, minRating = MINIMUM_RATING)
@@ -96,52 +101,26 @@ Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich e
 ```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
 
-tmp <- tmp[tmp$value > 0, c("title", "genre")] %>%
-  group_by(title) %>%
-  mutate(combinations = paste0(genre, collapse="-")) %>%
-  distinct(title, .keep_all = TRUE) %>%
-  select(-genre)
-
-combinations <- tmp %>%
-  dplyr::group_by(combinations) %>%
+tmp <- tmp %>%
+  dplyr::filter(value > 0) %>%
+  dplyr::group_by(genre) %>%
   dplyr::count() %>%
   dplyr::arrange(n)
 
+tmp$genre <- factor(tmp$genre, levels = tmp$genre)
 
-turn_into_wide <- function(df){
-  # Turns dataframe back into wide format with the genre combinations
-  df$value <- 1  
-  df <- tidyr::pivot_wider(data = df, names_from = "combinations", values_from = "value")
-  
-  return(df)
-}
-
-tmp <- turn_into_wide(df = tmp)
-
-total_unique_combinations <- length(unique(combinations$combinations))
-combinations$combinations <- factor(combinations$combinations, levels = combinations$combinations)
-
-ggplot2::ggplot(tail(combinations, 25), ggplot2::aes(x = n, y = combinations, label = n)) +
-  ggplot2::geom_segment(ggplot2::aes(x = 0, y = combinations, xend = n, yend = combinations), color = "grey50") +
+ggplot2::ggplot(tmp, ggplot2::aes(x = n, y = genre, label = n)) +
+  ggplot2::geom_segment(ggplot2::aes(x = 0, y = genre, xend = n, yend = genre), color = "grey50") +
   ggplot2::geom_point(size=3, color = "lightblue") +
-  ggplot2::geom_text(nudge_x = 25) +
+  ggplot2::geom_text(nudge_x =25) +
   ggplot2::theme_bw() + 
-  ggplot2::xlab("Counts") + 
-  ggplot2::ylab("") +
-  ggplot2::ggtitle(paste("Distribution of Genre Combinations (Total: ", total_unique_combinations, ")"))
-
-
-# Test
-check_dims_genres <- test_that(
-  "Check dims of genre matrices fit with new generated wide df", {
-    expect_equal(total_unique_combinations, dim(tmp)[2]-1)
-  }
-)
+  ggplot2::xlab("Counts")
 
 ```
 **Beschreibung:**
 Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten
-Filme besitzen. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen.
+Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass 
+gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind.
 
 
 
@@ -149,8 +128,8 @@ Filme besitzen. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadur
 ```{r}
 ########## Param ##########
 NORMALIZED_BY_VIEWS <- TRUE
-###########################
 
+###########################
 # Convert both into matrices
 user_movie_mat <- as(MovieLense_binary, "matrix")
 
