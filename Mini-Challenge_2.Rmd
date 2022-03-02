@@ -21,14 +21,8 @@ library("testthat")
 library("devtools")
 
 
-#install.packages("devtools", type = "win.binary")
-
-devtools::check()
-
-renv::snapshot()
-renv::restore()
-
-
+#renv::snapshot()
+#renv::restore()
 
 ```
 copy in separate chunk to install if not yet installed
@@ -142,8 +136,6 @@ check_dims_genres <- test_that(
     expect_equal(total_unique_combinations, dim(tmp)[2]-1)
      }
 )
-
-
 
 ```
 **Beschreibung:**
