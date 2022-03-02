@@ -41,7 +41,7 @@ jobs:
           
       - name: Run knit_rmd 
         run: |
-          source('knit_rmd.R)
+          source('knit_rmd.R')
         shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
