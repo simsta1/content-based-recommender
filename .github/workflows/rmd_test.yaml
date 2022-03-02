@@ -36,6 +36,7 @@ jobs:
           if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
           install.packages("testthat")
           install.packages("knitr")
+          install.packages("rcmdcheck")
           renv::restore()    
         
       - name: Create knitted rmd doc for test
@@ -43,6 +44,9 @@ jobs:
         
       - name: run test from testthat folder
         run: Rscript -e "source('tests/testthat/test_mc2.R)"
+        
+      - name: Run rcmdcheck
+        run: Rscript -e "rcmdcheck('tests/testthat/test_mc2.Rmd')"
         
       - name: Run tests
         run: Rscript -e "source('tests/testthat.R')"
