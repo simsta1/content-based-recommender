@@ -34,11 +34,8 @@ jobs:
         shell: Rscript {0}
         run: |
           if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          Rscript -e 'print("---------------------------- Renv Setup Done -------------------------------")'
           install.packages("testthat")
-          Rscript -e 'print"---------------------------- testthat installed ------------------------------")'
           install.packages("knitr")
-          Rscript -e 'print("------------------------------ knitr installed -----------------------------")'
           renv::restore()    
         
       - name: Create knitted rmd doc for test
