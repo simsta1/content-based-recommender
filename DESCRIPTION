@@ -11,15 +11,13 @@ Imports:
     reshape2,
     recommenderlab,
     knitr,
-    tidyr,
     ggplot2,
     vegan,
     coop,
     bench,
     gridExtra,
     renv,
-    testthat,
-    knitr
+    testthat
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

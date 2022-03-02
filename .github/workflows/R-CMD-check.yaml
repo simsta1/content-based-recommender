@@ -43,5 +43,10 @@ jobs:
         run: |
           source('knit_rmd.R')
         shell: Rscript {0}
+        
+      - name: Force test 
+        run: |
+          devtools::test()
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
