@@ -40,6 +40,7 @@ copy in separate chunk to install if not yet installed
 data("MovieLense")
 MovieLense
 ```
+
 2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
 ```{r}
 ########### Param ##########
@@ -87,6 +88,7 @@ hist(tmp, xlim=c(0,10),
      col="lightblue", xlab="Number of Genres", 
      ylab="Count", main="Distribution of Ratings per Movie" )
 ```
+
 **Beschreibung:**
 
 Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. 
@@ -107,8 +109,17 @@ combinations <- tmp %>%
  dplyr::arrange(n)
 
 
+
 turn_into_wide <- function(df){
- # Turns dataframe back into wide format with the genre combinations
+#' turn_into_wide
+#' Turns a long dataframe into wide dataframe
+#'
+#' @param df 
+#'
+#' @return df in wide format
+#' @export
+#'
+#' @examples turn_into_wide(long_dataframe)
  df$value <- 1  
  df <- tidyr::pivot_wider(data = df, names_from = "combinations", values_from = "value")
  
@@ -198,6 +209,7 @@ dim(user_genre_mat)
 
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
 ```{r}
+
 
 
 
