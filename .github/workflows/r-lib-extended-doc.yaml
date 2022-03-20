@@ -49,6 +49,6 @@ jobs:
           devtools::test()
         shell: Rscript {0}
 			
-			- uses: r-lib/actions/check-r-package@v1
-				with:
-					error_on: error
+      - uses: r-lib/actions/check-r-package@v1
+	with:
+	  error_on: error
