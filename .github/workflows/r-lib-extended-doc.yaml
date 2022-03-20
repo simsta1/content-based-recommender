@@ -38,11 +38,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
           extra-packages: rcmdcheck
-	  
-      - uses: r-lib/actions/check-r-package@v1
-        with:
-          error_on: error
-          
+
       - name: Run knit_rmd 
         run: |
           source('knit_rmd.R')
@@ -52,3 +48,7 @@ jobs:
         run: |
           devtools::test()
         shell: Rscript {0}
+			
+			- uses: r-lib/actions/check-r-package@v1
+				with:
+					error_on: error
