@@ -248,7 +248,8 @@ plot_user_profiles <- function(M, user_idx = NULL,
     fmsb::radarchart(
       df  = user_selection[c(1:2, i), ],  
       pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5),
-      plwd = 1, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+      plwd = 1, cglcol="grey", cglty=1, axislabcol="grey",
+      caxislabels=seq(0,20,5), cglwd=0.8,
       vlcex=0.8, title = paste("User: ", row.names(user_selection)[i]))
     }
   }
@@ -270,6 +271,36 @@ meistens bei dem Genre Drama.
 
 ## Ähnlichkeit von Nutzern und Filmen
 1.Cosinus-Ähnlichkeit zwischen User-Genre- und Movie-Genre-Matrix berechnen.
+```
+calc_cosine_similarity <- function(UG, MG, make_sparse=FALSE){
+  if (make_sparse){
+    UG <- Matrix(UG, sparse = TRUE)
+    MG <- Matrix(MG, sparse = TRUE) 
+  }
+  M <- UG %*% t(MG) / ( sqrt(rowSums(UG**2)) %*% t(sqrt(rowSums(MG**2))) )
+  return(M)
+}
+
+
+similarity_matrix <- calc_cosine_similarity(user_genre_mat, movie_genre_mat)
+
+
+# Run Tests on Dimensionality fo Similarity Matrix
+check_mat_dim <- test_that(
+  "Check mat dims with users", {
+    expect_equal(dim(similarity_matrix)[1], dim(user_genre_mat)[1])
+    expect_equal(dim(similarity_matrix)[2], dim(movie_genre_mat)[1])
+  }
+)
+# Check similarity results with package coop
+check_similarity_results <- test_that(
+  "Check mat dims with users", {
+    expect_equal(similarity_matrix[1,1]  ,coop::cosine(user_genre_mat[1, ] ,movie_genre_mat[1, ]) )
+  }
+)
+```
+
+
 2.Dimension der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen prüfen uns ausgeben.
 3.5-Zahlen Statistik für Matrix der Cosinus-Ähnlichkeiten prüfen uns ausgeben.
 4.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
