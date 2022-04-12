@@ -19,11 +19,10 @@ library("gridExtra")
 library("renv")
 library("testthat")
 library("devtools")
-
+library("fmsb")
 
 #renv::snapshot()
 #renv::restore()
-
 ```
 copy in separate chunk to install if not yet installed
 
@@ -205,22 +204,71 @@ Genres verfügen.
 ```{r}
 dim(user_genre_mat)
 ```
+Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu
+einem bestimmten Genre.
 
 
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
 ```{r}
+BINARY_THRESHOLD <- 0
 
+# Create Binaray User-Genre Matrix
+user_genre_mat_binary <- ifelse(user_genre_mat > BINARY_THRESHOLD, 1, 0)
 
+plot_user_profiles <- function(M, user_idx = NULL, 
+                              sample_size = 20, n_cols = 4){
+  #' Plots all user profiles
+  #'
+  #' params:
+  #'    user_genre_mat:   Matrix consisting of user genre ratings
+  #'    sample_size:      Size of the sample to take
+  #'    n_cols:           Ncols to plot.
+  #' 
+  #' in the Description section
+  #'
+  #' This part goes in the Details!
+  if (user_idx){
+    user_selection <- M[user_idx, ]
+  } else {
+    random_idx <- sample(seq(1, dim(M)[[1]]), 
+                        size = sample_size)
+    user_selection <- M[random_idx, ]
+  }  
+  user_selection <- as.data.frame(user_selection)
+  user_selection <- rbind(rep(max(user_selection), 
+                              nrow(user_selection)), 
+                          rep(min(user_selection),
+                             nrow(user_selection)), 
+                                  user_selection)
+  n_rows <- as.integer(sample_size / n_cols)
+  par(mar = rep(1, 4))
+  par(mfrow = c(n_rows, 4))
 
+  for (i in 3:nrow(user_selection)){
+    fmsb::radarchart(
+      df  = user_selection[c(1:2, i), ],  
+      pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5),
+      plwd = 1, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+      vlcex=0.8, title = paste("User: ", row.names(user_selection)[i]))
+    }
+  }
 
+random_idx <- sample(seq(1, dim(user_genre_mat_binary)[[1]]), 
+                        size = 8)
+plot_user_profiles(user_genre_mat_binary, user_idx = random_idx, 
+                    sample_size = 8)
+plot_user_profiles(user_genre_mat, user_idx = random_idx, 
+                    sample_size = 8)
 ```
+**Beschreibung:**
 
-
-
+Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten
+Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots veränderts sich wenn der BINARY_THRESHOLD
+verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung
+meistens bei dem Genre Drama.
 
 
 ## Ähnlichkeit von Nutzern und Filmen
-
 1.Cosinus-Ähnlichkeit zwischen User-Genre- und Movie-Genre-Matrix berechnen.
 2.Dimension der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen prüfen uns ausgeben.
 3.5-Zahlen Statistik für Matrix der Cosinus-Ähnlichkeiten prüfen uns ausgeben.
