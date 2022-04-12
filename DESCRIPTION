@@ -18,7 +18,8 @@ Imports:
     gridExtra,
     renv,
     testthat,
-    devtools
+    devtools,
+    fmsb
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
