@@ -75,21 +75,35 @@ dim(movie_genre)
 
 6.Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
 
+
 ```{r}
-tmp <- movie_genre %>%
+Number_of_Genres <- movie_genre %>%
   dplyr::select(-title) %>%
   rowSums()
 
-hist(tmp, xlim=c(0,10), 
-     col="lightblue", xlab="Number of Genres", 
-     ylab="Count", main="Distribution of Ratings per Movie" )
+  
+  #ggplot2::hist(tmp, xlim=c(0,6), 
+  #   col="lightblue", xlab="Number of Genres", 
+   #  ylab="Count", main="Numbers of Genre per Movie" )
+```
+
+
+```{r}
+Number_of_Genres <- movie_genre %>%
+  dplyr::select(-title) %>%
+  rowSums()
+
+ggplot(data.frame(data.frame(Number_of_Genres)), aes(Number_of_Genres)) +
+  geom_histogram(bins=6) +   
+  ggplot2::theme_bw() + 
+  ggplot2::xlab("Number of different genres per Movie") + 
+  ggplot2::ylab("Count") +
+  ggplot2::ggtitle('Histogram of Numbers of different Genres per Movie')
 ```
 
 **Beschreibung:**
 
 Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. 
-
-
 ```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
  
@@ -347,8 +361,42 @@ unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere 
 ## Empfehlbare Filme
 
 1.Bewertete Filme maskieren, d.h. “Negativabzug” der User-Items Matrix erzeugen, um anschliessend Empfehlungen herzuleiten.
+```{r}
+MovieLenseMat = as(MovieLense, "matrix")
+MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
+```
+np.where(mat == 0, 1, 0)
 2.Zeilensumme des “Negativabzuges” der User-Items Matrix für die User “5”, “25”, “50” und “150” ausgeben.
+```{r}
+SELECTED_USERS = c(5, 25, 50, 150)
+
+###
+Mask_sum = MovieLenseMat_mask
+Mask_sum = data.frame(Sum = rowSums(Mask_sum))
+Mask_sum$User <- factor(row.names(Mask_sum))
+
+### Select users
+sum_mask_users = Mask_sum[Mask_sum$User %in% SELECTED_USERS,]
+sum_mask_users$User <- factor(sum_mask_users$User, levels = SELECTED_USERS)
+  
+```
+```{r}
+ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
+  ggplot2::geom_bar(stat="identity") +   
+  ggplot2::geom_text(aes(label=Sum), vjust=1.6, color="white", size=3.5) +
+  ggplot2::ggtitle('Sum of unrated Movies of selected Users')
+  ggplot2::theme_bw()
+```
+
 3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
+```{r}
+ggplot(Mask_sum, aes(y=Sum)) + 
+  ggplot2::geom_boxplot(outlier.colour="red", outlier.shape=8,
+                outlier.size=1) +
+  ggplot2::ggtitle('Boxplot of Sum of unrated Movies per User') + 
+  ggplot2::theme_bw()
+fivenum(Mask_sum$Sum)
+```
 
 
 
