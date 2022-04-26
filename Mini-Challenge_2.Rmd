@@ -144,7 +144,7 @@ combinations$combinations <- factor(combinations$combinations, levels = combinat
 ggplot2::ggplot(tail(combinations, 25), ggplot2::aes(x = n, y = combinations, label = n)) +
   ggplot2::geom_segment(ggplot2::aes(x = 0, y = combinations, xend = n, yend = combinations), color = "grey50") +
   ggplot2::geom_point(size=3, color = "lightblue") +
-  ggplot2::geom_text(nudge_x = 25) +
+  ggplot2::geom_text(nudge_x = 25, size = 3) +
   ggplot2::theme_bw() + 
   ggplot2::xlab("Counts") + 
   ggplot2::ylab("") +
@@ -348,7 +348,10 @@ ggplot2::ggplot(data = user_selection, ggplot2::aes(x = similarity)) +
   ggplot2::geom_boxplot(fill="grey", color = "black", notch = TRUE) + 
   facet_grid(rows = vars(user)) + 
   xlim(0, 1) + 
-  labs(title = "Distribution of Similarities between User and Movies")
+  labs(title = "Distribution of Similarities between User and Movies") + 
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
 ```
 **Beschreibung:**
 
