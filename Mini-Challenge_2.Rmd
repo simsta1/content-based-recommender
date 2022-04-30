@@ -367,11 +367,22 @@ unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere 
 ```{r}
 MovieLenseMat = as(MovieLense, "matrix")
 MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
+
+image(MovieLenseMat)
+image(MovieLenseMat_mask)
 ```
-np.where(mat == 0, 1, 0)
+
+```{r}
+
+```
+
+
+
 2.Zeilensumme des “Negativabzuges” der User-Items Matrix für die User “5”, “25”, “50” und “150” ausgeben.
 ```{r}
 SELECTED_USERS = c(5, 25, 50, 150)
+
+
 
 ###
 Mask_sum = MovieLenseMat_mask
@@ -381,15 +392,20 @@ Mask_sum$User <- factor(row.names(Mask_sum))
 ### Select users
 sum_mask_users = Mask_sum[Mask_sum$User %in% SELECTED_USERS,]
 sum_mask_users$User <- factor(sum_mask_users$User, levels = SELECTED_USERS)
-  
-```
-```{r}
+
+#orginal-dimension of the matrix
+dim(MovieLense)
+
 ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
   ggplot2::geom_bar(stat="identity") +   
   ggplot2::geom_text(aes(label=Sum), vjust=1.6, color="white", size=3.5) +
   ggplot2::ggtitle('Sum of unrated Movies of selected Users')
   ggplot2::theme_bw()
 ```
+**Beschreibung:**
+
+Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das liegt daran, dass wir uns die Filme ansehen, die von den Nutzern nicht bewertet wurden. Da es so viele verschiedene Filme gibt (1664), ist es normal, dass jeder eine so hohe Anzahl an nicht bewerteten Filmen hat. Zum Beispiel können wir sagen, dass der Nutzer 5 die meisten Filme bewertet hat und deshalb die niedrigste Anzahl an nicht bewerteten Filmen aufweist.
+
 
 3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
 ```{r}
@@ -400,7 +416,10 @@ ggplot(Mask_sum, aes(y=Sum)) +
   ggplot2::theme_bw()
 fivenum(Mask_sum$Sum)
 ```
+**Beschreibung:**
 
+Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten.
+Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
 
 
 
