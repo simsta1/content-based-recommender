@@ -371,10 +371,9 @@ MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
 image(MovieLenseMat)
 image(MovieLenseMat_mask)
 ```
+**Beschreibung:**
 
-```{r}
-
-```
+Oben können wir die beiden Matrizen als Bild betrachten: Das Erste ist der normale Movielense-Datensatz und das Zweite ist der "Negativabzug". Im "Negativabzug" sind alle NA-Werte eine 1 und alle anderen eine 0. Da der durchschnittliche Nutzer nur wenige Filme bewertet, hat das erste Bild nur wenige Datenpunkte. Das Zweite ist genau das Gegenteil davon.
 
 
 
@@ -426,8 +425,33 @@ Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht be
 ## Top-N Empfehlungen
 
 1.Matrix für Bewertung aller Filme durch element-weise Multiplikation der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen und “Negativabzug” der User-Items Matrix erzeugen.
+
+```{r}
+similarity_users <-  t(MovieLenseMat_mask) %*% similarity_matrix
+
+image(as.matrix(similarity_users), main = "User similarity")
+
+
+```
+
+
+```{r}
+dim(similarity_users)
+```
+
 2.Dimension der Matrix für die Bewertung aller Filme prüfen.
+
+```{r}
+dim(similarity_users)
+```
+
 3.Top-20 Listen pro Nutzer extrahieren.
+
+```{r}
+
+```
+
+
 4.Länge der Top-20 Listen pro Nutzer prüfen.
 5.Verteilung der minimalen Ähnlichkeit für Top-N Listen für N = 10, 20, 50 und 100 für alle Nutzer visuell vergleichen.
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
