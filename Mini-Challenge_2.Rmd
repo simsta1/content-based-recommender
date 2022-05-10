@@ -40,7 +40,7 @@ MovieLense
 2.Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
 ```{r}
 ########### Param ##########
-MINIMUM_RATING = 1
+MINIMUM_RATING = 3
 ##############################
 
 MovieLense_binary <- recommenderlab::binarize(x = MovieLense, minRating = MINIMUM_RATING)
@@ -56,6 +56,7 @@ check_binary_matrix <- test_that(
 3.Dimension der User-Liked-Items Matrix prüfen und ausgeben.
 ```{r}
 dim(MovieLense_binary)
+MovieLense_binary_matrix = as(MovieLense_binary, "matrix")
 ```
 
 
@@ -75,25 +76,12 @@ dim(movie_genre)
 
 6.Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
 
-
 ```{r}
-Number_of_Genres <- movie_genre %>%
+number_of_genres <- movie_genre %>%
   dplyr::select(-title) %>%
   rowSums()
 
-  
-  #ggplot2::hist(tmp, xlim=c(0,6), 
-  #   col="lightblue", xlab="Number of Genres", 
-   #  ylab="Count", main="Numbers of Genre per Movie" )
-```
-
-
-```{r}
-Number_of_Genres <- movie_genre %>%
-  dplyr::select(-title) %>%
-  rowSums()
-
-ggplot(data.frame(data.frame(Number_of_Genres)), aes(Number_of_Genres)) +
+ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
   geom_histogram(bins=6) +   
   ggplot2::theme_bw() + 
   ggplot2::xlab("Number of different genres per Movie") + 
@@ -182,7 +170,7 @@ movie_genre_mat <- movie_genre %>%
 
 # Create user genre profile
 if (NORMALIZED_BY_VIEWS){
-  user_genre_mat <- ((user_movie_mat / as.vector(rowSums(user_movie_mat)))  %*% movie_genre_mat)
+  user_genre_mat <- ((user_movie_mat / as.vector(rowSums(user_movie_mat))) %*% movie_genre_mat)
 } else {
   user_genre_mat <- user_movie_mat %*% movie_genre_mat
 }
@@ -293,6 +281,7 @@ calc_cosine_similarity <- function(UG, MG, make_sparse=FALSE){
   return(M)
 }
 
+
 similarity_matrix <- calc_cosine_similarity(user_genre_mat, movie_genre_mat)
 
 # Check similarity results with package coop
@@ -302,6 +291,7 @@ check_similarity_results <- test_that(
   }
 )
 ```
+`user_gerne_mat` beinhaltet, welche genre ein user gern hat und `movie_gerne_mat`, welche genre ein Film hat.
 
 2.Dimension der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen prüfen uns ausgeben.
 ```{r}
@@ -368,8 +358,8 @@ unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere 
 MovieLenseMat = as(MovieLense, "matrix")
 MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
 
-image(MovieLenseMat)
-image(MovieLenseMat_mask)
+#(MovieLenseMat)
+#image(MovieLenseMat_mask)
 ```
 **Beschreibung:**
 
@@ -408,6 +398,7 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 
 3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
 ```{r}
+# Horizontal
 ggplot(Mask_sum, aes(y=Sum)) + 
   ggplot2::geom_boxplot(outlier.colour="red", outlier.shape=8,
                 outlier.size=1) +
@@ -427,16 +418,31 @@ Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht be
 1.Matrix für Bewertung aller Filme durch element-weise Multiplikation der Matrix der Cosinus-Ähnlichkeiten von Nutzern und Filmen und “Negativabzug” der User-Items Matrix erzeugen.
 
 ```{r}
-similarity_users <-  t(MovieLenseMat_mask) %*% similarity_matrix
+# Hadamart-Produkt
+similarity_users <- MovieLenseMat_mask * similarity_matrix  
 
-image(as.matrix(similarity_users), main = "User similarity")
+df <- melt(t(similarity_users[1:5,1:5]))
 
+colnames(df) <- c("x", "y", "value")
+ggplot(df, aes(x = x, y = y, fill = value)) +
+  geom_tile() + 
+  theme(axis.title.x=element_blank()
+        ) +
+  ggplot2::ggtitle('Genre-similarties for unseen movies for 5 selected Movies and Users.') +
+  ggplot2::ylab('User ID')
 
-```
+df <- melt(t(similarity_users[1,]))
 
-
-```{r}
-dim(similarity_users)
+colnames(df) <- c("x", "y", "value")
+ggplot(df, aes(x = y, y = x, fill = value)) +
+  geom_tile() + 
+  theme(axis.title.y=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        ) +
+  ggplot2::ggtitle('Genre-similarties for unseen movies for a selected user') +
+  ggplot2::xlab('Movie ID') 
 ```
 
 2.Dimension der Matrix für die Bewertung aller Filme prüfen.
