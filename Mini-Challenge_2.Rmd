@@ -443,7 +443,35 @@ ggplot(df, aes(x = y, y = x, fill = value)) +
         ) +
   ggplot2::ggtitle('Genre-similarties for unseen movies for a selected user') +
   ggplot2::xlab('Movie ID') 
+
+df <- melt(t(similarity_users))
+users_num = c(1,2,3,4,5,6,7,8,9,10)
+
+df1 <- df[df$Var2 == 1,]
+df1 <- df[df$Var2 %in% users_num, ]
+
+colnames(df1) <- c("x", "y", "value")
+ggplot(df1, aes(x = x, y = y, fill = value)) +
+  geom_tile() + 
+  theme(axis.title.y=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        ) +
+  ggplot2::ggtitle('Genre-similarties for unseen movies for the first 10 users') +
+  ggplot2::xlab('Movie ID') +
+  facet_grid(rows = df1$y, scales = "free")
+
 ```
+Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für User
+
+In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User. Dort können wir sehen, dass User 1 alle ausgewählten Filme gesehen hat (sortiert nach ID).
+
+Auf der zweiten Grafik sehen wir mehr Informationen über die anderen Filme für Benutzer 1. Es sieht so aus, als ob dieser Benutzer Filme nach Index sortiert ansieht (lol). die anderen Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1.
+
+Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen basierend auf dem Genre haben.
+
+
 
 2.Dimension der Matrix für die Bewertung aller Filme prüfen.
 
