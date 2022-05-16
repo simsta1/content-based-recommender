@@ -481,15 +481,57 @@ dim(similarity_users)
 
 3.Top-20 Listen pro Nutzer extrahieren.
 
+
 ```{r}
 
 ```
 
 
+```{r}
+get_topn_recos <- function(df,n){
+  df1 <- df[order(df$value, decreasing = TRUE), ]  # Order data descending
+  df11 <- Reduce(rbind,
+                 by(df1,
+                    df1["Var2"],
+                    head,
+                    n = n))
+  return(df11)
+}
+```
+
+
 4.Länge der Top-20 Listen pro Nutzer prüfen.
+
+```{r}
+
+top_top20_recos <- get_topn_recos(df, 20)
+top_top20_recos
+
+#test with a user
+top_top20_recos_user_42 <- top_top20_recos[top_top20_recos$Var2 %in% 42, ]
+top_top20_recos_user_42
+
+#5-Zahlen Statistik
+fivenum(top_top20_recos_user_42$value)
+
+```
+
 5.Verteilung der minimalen Ähnlichkeit für Top-N Listen für N = 10, 20, 50 und 100 für alle Nutzer visuell vergleichen.
+```{r}
+top_n_intervall = c(10, 20, 50, 100)
+
+
+```
+
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
+```{r}
+
+```
+
 7.Für Nutzer “133” und “555” Profil mit Top-N Empfehlungen für N = 20, 30, 40, 50 analysieren, visualisieren und diskutieren.
+```{r}
+
+```
 
 
 
