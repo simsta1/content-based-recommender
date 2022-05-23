@@ -589,7 +589,7 @@ top_n_list_selected_users
 ```{r}
 ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User), y = Similarity, color=factor(TopN))) + 
   ggplot2::geom_boxplot() +
-  labs(title = "Similarity Distrubtion for selected Users")
+  labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
 ```
 
 
