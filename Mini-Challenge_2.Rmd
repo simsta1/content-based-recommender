@@ -472,21 +472,12 @@ Auf der zweiten Grafik sehen wir mehr Informationen über die anderen Filme für
 Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen basierend auf dem Genre haben.
 
 
-
 2.Dimension der Matrix für die Bewertung aller Filme prüfen.
 
 ```{r}
 dim(similarity_users)
 ```
-
 3.Top-20 Listen pro Nutzer extrahieren.
-
-
-```{r}
-
-```
-
-
 ```{r}
 get_topn_recos <- function(df,n){
   df1 <- df[order(df$value, decreasing = TRUE), ]  # Order data descending
@@ -519,20 +510,87 @@ fivenum(top_top20_recos_user_42$value)
 5.Verteilung der minimalen Ähnlichkeit für Top-N Listen für N = 10, 20, 50 und 100 für alle Nutzer visuell vergleichen.
 ```{r}
 top_n_intervall = c(10, 20, 50, 100)
+top_n_col_names = c('Top 10', 'Top 20', 'Top 50', 'Top 100')
+#create data frame with 0 rows and 5 columns
+min_similarity_top_n <- data.frame(matrix(ncol = 1, nrow = length(row.names(similarity_users))))
+#provide column names
+colnames(min_similarity_top_n) <- c('User')
+min_similarity_top_n$User <- row.names(similarity_users)
 
+for (i in 1:4) {
+  top_n_recos = get_topn_recos(df, top_n_intervall[i])
+  
+  min_top_n_recos = top_n_recos %>% 
+    select(Var2, value) %>%
+    group_by(Var2) %>%  
+    mutate(
+    MinSimilarity = min(value, na.rm = T),
+    User = min(Var2, na.rm = T)
+    ) %>% select(User, MinSimilarity) %>%
+    distinct(.keep_all = TRUE)
 
+  min_similarity_top_n[,top_n_col_names[i]] <- min_top_n_recos$MinSimilarity
+}
+min_similarity_top_n_long = pivot_longer(min_similarity_top_n, cols=top_n_col_names, names_to='TopN', values_to='MinSimilarity')
+min_similarity_top_n_long
+```
+
+```{r}
+ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity)) + 
+  ggplot2::geom_boxplot(fill="grey", color = "black", notch = TRUE) +
+  labs(title = "Min Similarity Distrubtion per Top N List") + 
+  facet_grid(rows = vars(TopN)) + 
+  xlim(0.5, 1) + 
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
 ```
 
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
 ```{r}
+top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ]
+top_top20_recos_users$User = top_top20_recos_users$Var2
+top_top20_recos_users$Similarity = top_top20_recos_users$value
 
+ggplot2::ggplot(data = top_top20_recos_users, ggplot2::aes(x = Similarity)) + 
+  ggplot2::geom_boxplot(fill="grey", color = "black", notch = FALSE) +
+  labs(title = "Similarity Distrubtion for selected Users") + 
+  facet_grid(rows = vars(User)) + 
+  xlim(0.7, 0.9) + 
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
 ```
 
 7.Für Nutzer “133” und “555” Profil mit Top-N Empfehlungen für N = 20, 30, 40, 50 analysieren, visualisieren und diskutieren.
 ```{r}
+top_n_intervall = c(20, 30, 40, 50)
+top_n_col_names = c('Top 20', 'Top 30', 'Top 40', 'Top 50')
+users = c(133, 55)
+#create data frame with 0 rows and 5 columns
+top_n_list_selected_users <- data.frame(matrix(ncol = 3, nrow = 0))
 
+#provide column names
+colnames(min_similarity_top_n) <- c('User', 'TopN', 'Similarity')
+selected_users = df[df$Var2 %in% users,  ]
+
+for (i in 1:4) {
+  top_n_recos = get_topn_recos(selected_users, top_n_intervall[i])
+  top_n_recos$User = top_n_recos$Var2
+  top_n_recos$Similarity = top_n_recos$value
+  top_n_recos$TopN = top_n_col_names[i]
+  top_n_recos <- top_n_recos %>%
+    select(User, TopN, Similarity)
+  top_n_list_selected_users <- rbind(top_n_list_selected_users,top_n_recos)
+}
+top_n_list_selected_users
 ```
 
+```{r}
+ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User), y = Similarity, color=factor(TopN))) + 
+  ggplot2::geom_boxplot() +
+  labs(title = "Similarity Distrubtion for selected Users")
+```
 
 
 
