@@ -556,6 +556,7 @@ ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity
 ```{r}
 # Histogram zuerst, nicht multimodal (bei 1x hügel, boxplot gut, sonst eher histogram.)
 # Hinweis lesen! Vergleich mit Ground Truth (ist der Recommender gut?)
+# Radar plot Topn genres vs ground truth genres.
 top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ]
 top_top20_recos_users$User = top_top20_recos_users$Var2
 top_top20_recos_users$Similarity = top_top20_recos_users$value
@@ -595,11 +596,10 @@ top_n_list_selected_users
 ```
 
 ```{r}
-# GGf farben 
+# Mehr distukieren und analysieren.
 ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User), y = Similarity, color=factor(TopN))) + 
   ggplot2::geom_boxplot() +
   labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
 ```
-
 
 
