@@ -402,6 +402,9 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 ggplot(Mask_sum, aes(y=Sum)) + 
   ggplot2::geom_boxplot(outlier.colour="red", outlier.shape=8,
                 outlier.size=1) +
+  # Remove outliers
+  # Plausibiltätscheck
+  # Stimmt! 
   ggplot2::ggtitle('Boxplot of Sum of unrated Movies per User') + 
   ggplot2::theme_bw()
 fivenum(Mask_sum$Sum)
@@ -419,6 +422,8 @@ Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht be
 
 ```{r}
 # Hadamart-Produkt
+# BEsser ausschreiben (xy label, was sehe ich?)
+# Grafik + Text + Legende sollte die ganze Grafik erklären
 similarity_users <- MovieLenseMat_mask * similarity_matrix  
 
 df <- melt(t(similarity_users[1:5,1:5]))
@@ -536,7 +541,8 @@ min_similarity_top_n_long
 ```
 
 ```{r}
-ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity)) + 
+# Notched boxplot, what is it?
+ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity)) +
   ggplot2::geom_boxplot(fill="grey", color = "black", notch = TRUE) +
   labs(title = "Min Similarity Distrubtion per Top N List") + 
   facet_grid(rows = vars(TopN)) + 
@@ -548,6 +554,8 @@ ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity
 
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
 ```{r}
+# Histogram zuerst, nicht multimodal (bei 1x hügel, boxplot gut, sonst eher histogram.)
+# Hinweis lesen! Vergleich mit Ground Truth (ist der Recommender gut?)
 top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ]
 top_top20_recos_users$User = top_top20_recos_users$Var2
 top_top20_recos_users$Similarity = top_top20_recos_users$value
@@ -587,6 +595,7 @@ top_n_list_selected_users
 ```
 
 ```{r}
+# GGf farben 
 ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User), y = Similarity, color=factor(TopN))) + 
   ggplot2::geom_boxplot() +
   labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
