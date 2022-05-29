@@ -550,6 +550,12 @@ ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
+
+ggplot(min_similarity_top_n_long, aes(x=MinSimilarity)) + 
+  geom_histogram(bins=30)+
+  labs(title = "Min Similarity Distrubtion per Top N List")+
+  facet_grid(TopN ~ .)
+  
 ```
 
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
