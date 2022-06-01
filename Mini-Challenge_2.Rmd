@@ -87,12 +87,16 @@ ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
   ggplot2::theme_bw() + 
   ggplot2::xlab("Number of different genres per Movie") + 
   ggplot2::ylab("Count") +
-  ggplot2::ggtitle('Histogram of Numbers of different Genres per Movie')
+  ggplot2::ggtitle('Count of different Genres per Movie') +
+  ggplot2::theme(panel.border = element_blank(),
+                 axis.line = element_line(colour = "black"))
+
 ```
 
 **Beschreibung:**
 
-Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. 
+Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt.
+
 ```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
  
@@ -120,7 +124,10 @@ ggplot2::ggplot(tail(combinations, 25), ggplot2::aes(x = n, y = combinations, la
   ggplot2::theme_bw() + 
   ggplot2::xlab("Counts") + 
   ggplot2::ylab("") +
-  ggplot2::ggtitle(paste("Distribution of Genre Combinations (Total: ", total_unique_combinations, ")"))
+  ggplot2::ggtitle(paste("Distribution of Genre Combinations (Total: ", total_unique_combinations, ")")) +
+  ggplot2::theme(panel.border = element_blank(),
+                 axis.line = element_line(colour = "black"))
+
  
  
  # Test
@@ -210,7 +217,8 @@ plot_user_profiles(user_genre_mat, user_idx = random_idx,
 Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten
 Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots veränderts sich wenn der BINARY_THRESHOLD
 verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung
-meistens bei dem Genre Drama.
+meistens bei dem Genre Drama, was durchaus sinn macht, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem 
+Genre zu finden sind.
 
 
 ## Ähnlichkeit von Nutzern und Filmen
@@ -320,8 +328,13 @@ dim(MovieLense)
 ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
   ggplot2::geom_bar(stat="identity") +   
   ggplot2::geom_text(aes(label=Sum), vjust=1.6, color="white", size=3.5) +
-  ggplot2::ggtitle('Sum of unrated Movies of selected Users')
-  ggplot2::theme_bw()
+  ggplot2::ggtitle('Sum of unrated Movies of selected Users') +
+  ggplot2::theme_bw() +
+  ggplot2::theme(panel.border = element_blank(),
+                 panel.grid.major = element_blank(),
+                 axis.line = element_line(colour = "black")) +
+  ggplot2::ylim(0, max(sum_mask_users$Sum))
+
 ```
 **Beschreibung:**
 
@@ -332,24 +345,28 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 ```{r}
 fivenum(Mask_sum$Sum)
 
+```
+Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Q3 und Maximum der Daten.
+Ausserdem sieht man hier auch, dass die  Verteilung eher linksschief sein muss, weil die 75% aller Datenpunkte grösser ist als Q1.
+
+
+
+```{r}
 # Horizontal
 ggplot(Mask_sum, aes(y=Sum)) + 
-  ggplot2::geom_boxplot(outlier.shape = NA) +
-  # Remove outliers
-  # Plausibiltätscheck
-  # Stimmt! 
+  ggplot2::geom_boxplot(fill = "grey", alpha = .5) +
   ggplot2::ggtitle('Boxplot of Sum of unrated Movies per User') + 
   ggplot2::theme_bw() +
-  scale_y_continuous(limits = quantile(Mask_sum$Sum, c(0.1, 0.9))) +
-  coord_flip() +
+  coord_flip() + theme_bw() +
   theme(axis.text.y=element_blank(),
-        axis.ticks.y=element_blank() 
-        )
+        axis.ticks.y=element_blank(),
+        panel.border = element_blank(), 
+        axis.line = element_line())
 ```
 **Beschreibung:**
-
-Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten.
-Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
+Der Plot unterstützt die Annahmen anhander Tukey-Fünfnummer Statistik nochmals. Mit Hilfe der Grafik können wir feststellen, 
+dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. 
+Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
 
 
 
@@ -442,6 +459,8 @@ top20_mean_group_size <- top_top20_recos %>%
 
 expect_equal(all(top20_mean_group_size$group_size == 20), TRUE)
 ```
+Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-N Empfehlungen hoch ausfällt.
+
 **Beschreibung:**
 
 Wie erwartet, besteht die Top20 Liste für jeden User aus 20 Filmen.
@@ -499,7 +518,7 @@ top_top20_recos_users$Similarity = top_top20_recos_users$value
 
 
 ggplot2::ggplot(top_top20_recos_users, ggplot2::aes(x=Similarity)) + 
-  ggplot2::geom_histogram(bins=45)+
+  ggplot2::geom_histogram(bins=20)+
   ggplot2::labs(title = "Similarity Distrubtion for selected Users") +
   ggplot2::facet_grid(User ~ .)
 ```
@@ -534,8 +553,10 @@ top_n_list_selected_users
 
 ```{r}
 # Mehr distukieren und analysieren.
-ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User), y = Similarity, color=factor(TopN))) + 
+ggplot2::ggplot(data = top_n_list_selected_users, 
+                ggplot2::aes(x = factor(User), y = Similarity, , fill=factor(TopN))) + 
   ggplot2::geom_boxplot() +
+  ggplot2::scale_fill_brewer(palette = "Blues") + 
   labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
 ```
 **Beschreibung:**
@@ -545,12 +566,13 @@ Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies
 Ein anderer Ansatz wäre auch, dass eine zufällige Empfehlung nicht 100% zufällig ist, sondern einfach ein Film, welcher knapp unter dieser Mindest-Similarity liegt.
 
 ```{r}
-user_profiles <- analyze_topn_recos(selected_users, 50)
+user_profiles <-  analyze_topn_recos(selected_users, 50)
 create_cleveland_plot(user_profiles)
+
 ```
 **Beschreibung:**
 
-Rot sind unsere Recommendations und grün ist der ground truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
+Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
 
 
 
