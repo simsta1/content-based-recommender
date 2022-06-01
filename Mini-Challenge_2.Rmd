@@ -330,16 +330,21 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 
 3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
 ```{r}
+fivenum(Mask_sum$Sum)
+
 # Horizontal
 ggplot(Mask_sum, aes(y=Sum)) + 
-  ggplot2::geom_boxplot(outlier.colour="red", outlier.shape=8,
-                outlier.size=1) +
+  ggplot2::geom_boxplot(outlier.shape = NA) +
   # Remove outliers
   # Plausibiltätscheck
   # Stimmt! 
   ggplot2::ggtitle('Boxplot of Sum of unrated Movies per User') + 
-  ggplot2::theme_bw()
-fivenum(Mask_sum$Sum)
+  ggplot2::theme_bw() +
+  scale_y_continuous(limits = quantile(Mask_sum$Sum, c(0.1, 0.9))) +
+  coord_flip() +
+  theme(axis.text.y=element_blank(),
+        axis.ticks.y=element_blank() 
+        )
 ```
 **Beschreibung:**
 
@@ -381,11 +386,11 @@ ggplot(df, aes(x = y, y = x, fill = value)) +
   ggplot2::ggtitle('Genre-similarties for unseen movies for a selected user') +
   ggplot2::xlab('Movie ID') 
 
-df <- melt(t(similarity_users))
+similarity_users_melted <- melt(t(similarity_users))
 users_num = c(1,2,3,4,5,6,7,8,9,10)
 
-df1 <- df[df$Var2 == 1,]
-df1 <- df[df$Var2 %in% users_num, ]
+df1 <- similarity_users_melted[similarity_users_melted$Var2 == 1,]
+df1 <- similarity_users_melted[similarity_users_melted$Var2 %in% users_num, ]
 
 colnames(df1) <- c("x", "y", "value")
 ggplot(df1, aes(x = x, y = y, fill = value)) +
@@ -400,6 +405,8 @@ ggplot(df1, aes(x = x, y = y, fill = value)) +
   facet_grid(rows = df1$y, scales = "free")
 
 ```
+**Beschreibung:**
+
 Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für User
 
 In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User. Dort können wir sehen, dass User 1 alle ausgewählten Filme gesehen hat (sortiert nach ID).
@@ -415,28 +422,35 @@ Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Gen
 dim(similarity_users)
 ```
 3.Top-20 Listen pro Nutzer extrahieren.
-
+```{r}
+top_top20_recos <- get_topn_recos(similarity_users_melted, 20)
+top_top20_recos
+```
 
 4.Länge der Top-20 Listen pro Nutzer prüfen.
 
 ```{r}
-
-top_top20_recos <- get_topn_recos(df, 20)
-top_top20_recos
-
 #test with a user
 top_top20_recos_user_42 <- top_top20_recos[top_top20_recos$Var2 %in% 42, ]
-top_top20_recos_user_42
 
 #5-Zahlen Statistik
 fivenum(top_top20_recos_user_42$value)
 
+top20_mean_group_size <- top_top20_recos %>%
+  group_by(Var2) %>%
+  summarise(group_size = n())
+
+expect_equal(all(top20_mean_group_size$group_size == 20), TRUE)
 ```
+**Beschreibung:**
+
+Wie erwartet, besteht die Top20 Liste für jeden User aus 20 Filmen.
+
 
 5.Verteilung der minimalen Ähnlichkeit für Top-N Listen für N = 10, 20, 50 und 100 für alle Nutzer visuell vergleichen.
 ```{r}
 top_n_intervall = c(10, 20, 50, 100)
-top_n_col_names = c('Top 10', 'Top 20', 'Top 50', 'Top 100')
+top_n_col_names = c('1. Top 10', '2. Top 20', '3. Top 50', '4. Top 100')
 #create data frame with 0 rows and 5 columns
 min_similarity_top_n <- data.frame(matrix(ncol = 1, nrow = length(row.names(similarity_users))))
 #provide column names
@@ -444,7 +458,7 @@ colnames(min_similarity_top_n) <- c('User')
 min_similarity_top_n$User <- row.names(similarity_users)
 
 for (i in 1:4) {
-  top_n_recos = get_topn_recos(df, top_n_intervall[i])
+  top_n_recos = get_topn_recos(similarity_users_melted, top_n_intervall[i])
   
   min_top_n_recos = top_n_recos %>% 
     select(Var2, value) %>%
@@ -463,21 +477,16 @@ min_similarity_top_n_long
 
 ```{r}
 # Notched boxplot, what is it?
-ggplot2::ggplot(data = min_similarity_top_n_long, ggplot2::aes(x = MinSimilarity)) +
-  ggplot2::geom_boxplot(fill="grey", color = "black", notch = TRUE) +
-  labs(title = "Min Similarity Distrubtion per Top N List") + 
-  facet_grid(rows = vars(TopN)) + 
-  xlim(0.5, 1) + 
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
 ggplot2::ggplot(min_similarity_top_n_long, ggplot2::aes(x=MinSimilarity)) + 
-  ggplot2::geom_histogram(bins=30)+
+  ggplot2::geom_histogram(bins=50)+
   ggplot2::labs(title = "Min Similarity Distrubtion per Top N List")+
   ggplot2::facet_grid(TopN ~ .)
   
 ```
+
+**Beschreibung:**
+Im oberen Plot sehen wir, dass der Modus der Mindest-Similarity abnimmt bei einem grösseren N bei der TopN Liste. Bei der Top100 sehen wir, dass die Mindest-Similarity bis under 0.4 fällt. Das führt also zu wahrscheinlich ungeeigneten Empfehlungen.
+
 
 6.Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
 ```{r}
@@ -488,15 +497,16 @@ top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 
 top_top20_recos_users$User = top_top20_recos_users$Var2
 top_top20_recos_users$Similarity = top_top20_recos_users$value
 
-ggplot2::ggplot(data = top_top20_recos_users, ggplot2::aes(x = Similarity)) + 
-  ggplot2::geom_boxplot(fill="grey", color = "black", notch = FALSE) +
-  labs(title = "Similarity Distrubtion for selected Users") + 
-  facet_grid(rows = vars(User)) + 
-  xlim(0.7, 0.9) + 
-  theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+
+ggplot2::ggplot(top_top20_recos_users, ggplot2::aes(x=Similarity)) + 
+  ggplot2::geom_histogram(bins=45)+
+  ggplot2::labs(title = "Similarity Distrubtion for selected Users") +
+  ggplot2::facet_grid(User ~ .)
 ```
+**Beschreibung:**
+
+Es ist interessant zu sehen, wie sehr die Top20-Similarity für verschiedene User variiert. Das zeigt uns, dass unser Recommender für verschiedene User verschiedene Empfehlungen macht. 
+
 
 7.Für Nutzer “133” und “555” Profil mit Top-N Empfehlungen für N = 20, 30, 40, 50 analysieren, visualisieren und diskutieren.
 ```{r}
@@ -508,7 +518,7 @@ top_n_list_selected_users <- data.frame(matrix(ncol = 3, nrow = 0))
 
 #provide column names
 colnames(min_similarity_top_n) <- c('User', 'TopN', 'Similarity')
-selected_users = df[df$Var2 %in% users,  ]
+selected_users = similarity_users_melted[similarity_users_melted$Var2 %in% users,  ]
 
 for (i in 1:4) {
   top_n_recos = get_topn_recos(selected_users, top_n_intervall[i])
@@ -528,72 +538,20 @@ ggplot2::ggplot(data = top_n_list_selected_users, ggplot2::aes(x = factor(User),
   ggplot2::geom_boxplot() +
   labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
 ```
+**Beschreibung:**
 
+Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Similarity haben zu Filmen, welche man bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. Hier muss man also anpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. Falls man also z.B. eine mindest-Similarity für Empfehlungen einbaut, muss man auch eine Mindest-Anzahl an Empfehlungen einbauen. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser Mndest-Similarity sind.
+
+Ein anderer Ansatz wäre auch, dass eine zufällige Empfehlung nicht 100% zufällig ist, sondern einfach ein Film, welcher knapp unter dieser Mindest-Similarity liegt.
 
 ```{r}
-# Extract recommended user profiles
-top_n_recos = get_topn_recos(selected_users, 50)
-
-colnames(top_n_recos) <- c("title", "user", "similarity")
-top_n_recos$title <- as.character(top_n_recos$title)
-
-top_n_recos <- merge(x = top_n_recos, y = movie_genre, 
-                     by.x = "title", by.y = "title") %>%
-  select(-c(title, similarity))
-
-selected_cols <- top_n_recos %>%
-  select(-user) %>%
-  colnames()
-
-recommended_user_profiles <- top_n_recos %>%
-  group_by(user) %>%
-  summarise(across(everything(), sum))
-recommended_user_profiles$ground_truth <- FALSE
-
-
-# Extract true user profiles
-tmp <- user_movie_mat %*% movie_genre_mat
-tmp <- as.data.frame(tmp)
-tmp$user <- rownames(tmp)
-
-# filter users
-true_user_profiles <- tmp[tmp$user %in% c(recommended_user_profiles$user), ]
-true_user_profiles$ground_truth <- TRUE
-true_user_profiles
-
-
-user_profiles <- rbind(true_user_profiles, recommended_user_profiles)
-
-genre_columns <- user_profiles %>%
-  select(-c(ground_truth, user)) %>%
-  colnames()
-
-# Plot cleveland plot with relevant difference percentage of prediced movies
-for (u_id in unique(selected_users$Var2)){
-  user_profile_select <- user_profiles[user_profiles$user == u_id, ] %>%
-    select(-c(user)) 
-  
-  rownames(user_profile_select) <- user_profile_select$ground_truth 
-  user_profile_select <- t(user_profile_select)
-  user_profile_select <- head(user_profile_select, dim(user_profile_select)[[1]] - 1) %>%
-    as.data.frame()
-  colnames(user_profile_select) <- c("ground_truth", "recommendation")
-
-  user_profile_select$ground_truth <- user_profile_select$ground_truth / sum(user_profile_select$ground_truth) 
-  user_profile_select$recommendation <- user_profile_select$recommendation / sum(user_profile_select$recommendation) 
-  user_profile_select$genre <- rownames(user_profile_select)
-  rownames(user_profile_select) <- NULL
-  
-  # Plot
-  p <- ggplot(user_profile_select) +
-    geom_segment( aes(x=genre, xend=genre, y=ground_truth, yend=recommendation), color="grey") +
-    geom_point( aes(x=genre, y=ground_truth), color=rgb(0.2,0.7,0.1,0.5), size=3 ) +
-    geom_point( aes(x=genre, y=recommendation), color=rgb(0.7,0.2,0.1,0.5), size=3) +
-    coord_flip()+
-    xlab("") +
-    ylab("Percentage recommended vs. watched genre") + 
-    labs(title = paste("Recommendation vs Ground Truth for user", u_id))
-  print(p)
-}
+user_profiles <- analyze_topn_recos(selected_users, 50)
+create_cleveland_plot(user_profiles)
 ```
+**Beschreibung:**
+
+Rot sind unsere Recommendations und grün ist der ground truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
+
+
+
 
