@@ -19,6 +19,8 @@ library("renv")
 library("testthat")
 library("devtools")
 library("fmsb")
+library("ggridges")
+
 
 source("./src/helper.R")
 
@@ -254,10 +256,16 @@ fivenum(similarity_matrix)
 ```
 4.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
 ```{r}
-hist(similarity_matrix , breaks=40 , col = "lightblue" , 
-     main="Distribution of Similarity Matrix" , xlab="Cosine Similarities", 
-     xlim=c(0,1))
+tmp <- as.vector(similarity_matrix)
+tmp <- as.data.frame(tmp)
 
+ggplot2::ggplot(data = tmp, aes(x = tmp)) +
+  ggplot2::geom_histogram(fill = "grey", color = "black", 
+                        adjust = 1.5, alpha = .9) +
+  ggplot2::geom_density(color="black") +
+  ggplot2::labs(title = "Distribution of Similarity Matrix") +
+  ggplot2::xlab("Cosine Similarities") +
+  theme_classic()
 ```
 **Beschreibung:**
 Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes.
@@ -326,14 +334,15 @@ sum_mask_users$User <- factor(sum_mask_users$User, levels = SELECTED_USERS)
 dim(MovieLense)
 
 ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
-  ggplot2::geom_bar(stat="identity") +   
+  ggplot2::geom_bar(stat="identity", alpha = .7) +   
   ggplot2::geom_text(aes(label=Sum), vjust=1.6, color="white", size=3.5) +
   ggplot2::ggtitle('Sum of unrated Movies of selected Users') +
   ggplot2::theme_bw() +
   ggplot2::theme(panel.border = element_blank(),
                  panel.grid.major = element_blank(),
                  axis.line = element_line(colour = "black")) +
-  ggplot2::ylim(0, max(sum_mask_users$Sum))
+  ggplot2::ylim(0, max(sum_mask_users$Sum)) +
+  ggplot2::theme_classic()
 
 ```
 **Beschreibung:**
@@ -500,7 +509,6 @@ ggplot2::ggplot(min_similarity_top_n_long, ggplot2::aes(x=MinSimilarity)) +
   ggplot2::geom_histogram(bins=50)+
   ggplot2::labs(title = "Min Similarity Distrubtion per Top N List")+
   ggplot2::facet_grid(TopN ~ .)
-  
 ```
 
 **Beschreibung:**
@@ -520,7 +528,9 @@ top_top20_recos_users$Similarity = top_top20_recos_users$value
 ggplot2::ggplot(top_top20_recos_users, ggplot2::aes(x=Similarity)) + 
   ggplot2::geom_histogram(bins=20)+
   ggplot2::labs(title = "Similarity Distrubtion for selected Users") +
-  ggplot2::facet_grid(User ~ .)
+  ggplot2::facet_grid(User ~ .) +
+  ggplot2::theme_bw()
+
 ```
 **Beschreibung:**
 
@@ -573,7 +583,3 @@ create_cleveland_plot(user_profiles)
 **Beschreibung:**
 
 Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
-
-
-
-
