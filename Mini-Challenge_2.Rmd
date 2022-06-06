@@ -84,20 +84,23 @@ number_of_genres <- movie_genre %>%
   dplyr::select(-title) %>%
   rowSums()
 
+
 ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
-  geom_histogram(bins=6) +   
+  geom_bar() +   
   ggplot2::theme_bw() + 
   ggplot2::xlab("Number of different genres per Movie") + 
   ggplot2::ylab("Count") +
   ggplot2::ggtitle('Count of different Genres per Movie') +
   ggplot2::theme(panel.border = element_blank(),
-                 axis.line = element_line(colour = "black"))
+                 axis.line = element_line(colour = "black")) +
+  ggplot2::scale_x_continuous(breaks = seq(1, 6, by = 1)) + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = -0.5)
 
 ```
 
 **Beschreibung:**
 
-Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt.
+Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt. Dies ist jedoch sehr selten und nur bei 3 Filmen der Fall.
 
 ```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
@@ -141,9 +144,7 @@ check_dims_genres <- test_that(
 
 ```
 **Beschreibung:**
-Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten
-Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass 
-gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind.
+Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind.
 
 
 
