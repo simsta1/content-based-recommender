@@ -67,6 +67,7 @@ MovieLense_binary_matrix = as(MovieLense_binary, "matrix")
 ```{r}
 movie_genre <- MovieLenseMeta %>%
   dplyr::select(-c(url, year))
+head(movie_genre)
 ```
 
 
@@ -157,7 +158,8 @@ check_dims_genres <- test_that(
 
 ```
 **Beschreibung:**
-Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind. Wir können ebenfalls sehen, dass wir viele Genre-Kombinationen von vielen verschiednen Filmen haben.
+
+Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind. Wir können ebenfalls sehen, dass wir viele andere Genres und Genre-Kombinationen (in "Other") von vielen verschiedenen Filmen haben.
 
 
 
@@ -210,8 +212,7 @@ Genres verfügen.
 ```{r}
 dim(user_genre_mat)
 ```
-Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu
-einem bestimmten Genre.
+Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu einem bestimmten Genre.
 
 
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
@@ -230,11 +231,7 @@ plot_user_profiles(user_genre_mat, user_idx = random_idx,
 ```
 **Beschreibung:**
 
-Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten
-Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots veränderts sich wenn der BINARY_THRESHOLD
-verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung
-meistens bei dem Genre Drama, was durchaus sinn macht, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem 
-Genre zu finden sind.
+Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots verändert sich wenn der BINARY_THRESHOLD verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung meistens bei dem Genre Drama, was durchaus Sinn macht, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem Genre zu finden sind.
 
 
 ## Ähnlichkeit von Nutzern und Filmen
@@ -267,6 +264,7 @@ check_mat_dim <- test_that(
 3.5-Zahlen Statistik für Matrix der Cosinus-Ähnlichkeiten prüfen uns ausgeben.
 ```{r}
 fivenum(similarity_matrix)
+summary(similarity_matrix)
 ```
 4.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
 ```{r}
@@ -274,25 +272,19 @@ tmp <- as.vector(similarity_matrix)
 tmp <- as.data.frame(tmp)
 
 ggplot2::ggplot(data = tmp, aes(x = tmp)) +
-  ggplot2::geom_histogram(fill = "grey", color = "black", 
-                        adjust = 1.5, alpha = .9) +
-  ggplot2::geom_density(color="black") +
+  ggplot2::geom_density(fill = "grey", color = "black") +
   ggplot2::labs(title = "Distribution of Similarity Matrix") +
   ggplot2::xlab("Cosine Similarities") +
   theme_classic()
 ```
 **Beschreibung:**
-Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes.
-Man erkennt eine starke Ausprägung der Nullwerte, respektive gar keine Similarity zwischen Nutzer und Filmen. Dies 
-lässt sich mit der These vereinbaren, dass es Nutzer gibt, die fast keine Filme geschaut und vice-versa Filme, die fast nie geschaut
-wurden. Ohne die starke Ausprägung wäre das Histogram praktisch normalverteilt.
+Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes. Man erkennt eine starke Ausprägung der Nullwerte, respektive gar keine Similarity zwischen Nutzer und Filmen. Dies lässt sich mit der These vereinbaren, dass es Nutzer gibt, die fast keine Filme geschaut und vice-versa Filme, die fast nie geschaut wurden. Ohne die starke Ausprägung bei der tiefen Cosine Similaritie wäre das Histogram praktisch normalverteilt.
 
 
 
 5.Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot für Nutzer “241”, “414”, “477”, “526”, “640” und “710” visualisieren.
 ```{r}
 user_selection <- similarity_matrix[c(241, 414, 477, 526, 640, 710), ]
-row.names(user_selection)
 
 user_selection <- as.data.frame(t(user_selection)) %>%
   reshape2::melt(value.name = "similarity")
@@ -307,13 +299,19 @@ ggplot2::ggplot(data = user_selection, ggplot2::aes(x = similarity)) +
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
+
+ggplot2::ggplot(data = user_selection, ggplot2::aes(x = similarity)) + 
+  ggplot2::geom_density(fill="grey", color = "black") + 
+  facet_grid(rows = vars(user)) + 
+  xlim(0, 1) + 
+  labs(title = "Distribution of Similarities between User and Movies") + 
+  ggplot2::ylab("density") +
+  theme(axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
 ```
 **Beschreibung:**
 
-Der Plot zeigt die Verteilung der Similarites zwischen einem User und allen Filmen. Auf der rechten Seite ist die jeweilige 
-ID des Users verzeichnet. Die Daten wurden anhand eines Boxplots visualisiert, um Unterschiede zwischen den Usern besser zu erkennen.
-Man kann auf den ersten Blick anhand des Notches (95% Konfidenzintervall vom Mittelwert), dass sich die Nutzer statistisch signifikant voneinander
-unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere Auffälligkeit sind die einzelnen Ausreisser der Ähnlickeitsmasse von Nutzer 640, die aber auch auf die kleine Streuung der Similarities für diesen Nutzer zurückzuführen sind.
+Die Plots zeigt die Verteilung der Similarites zwischen einem User und allen Filmen. Auf der rechten Seite ist die jeweilige ID des Users verzeichnet. Die Daten wurden anhand eines Boxplots visualisiert, um Unterschiede zwischen den Usern besser zu erkennen. Auf der ersten Visualisierung (Boxplot) kann man anhand des Notches (95% Konfidenzintervall vom Mittelwert) erkennen, dass sich die Nutzer statistisch signifikant voneinander unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere Auffälligkeit sind die einzelnen Ausreisser der Ähnlickeitsmasse von Nutzer 640, die aber auch auf die kleine Streuung der Similarities für diesen Nutzer zurückzuführen sind. Auf der zweiten Visualisierung (Dichteplot) sehen wir das wir jeweils bei jedem Nutzer mehrere Ausprägungen haben. DIese sind jeh nach Nutzer unterschiedlich stark ausgeprägt und verteilt.
 
 
 ## Empfehlbare Filme
@@ -323,8 +321,8 @@ unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere 
 MovieLenseMat = as(MovieLense, "matrix")
 MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
 
-#(MovieLenseMat)
-#image(MovieLenseMat_mask)
+image(MovieLenseMat)
+image(MovieLenseMat_mask)
 ```
 **Beschreibung:**
 
@@ -367,7 +365,6 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 3.5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
 ```{r}
 fivenum(Mask_sum$Sum)
-
 ```
 Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Q3 und Maximum der Daten.
 Ausserdem sieht man hier auch, dass die  Verteilung eher linksschief sein muss, weil die 75% aller Datenpunkte grösser ist als Q1.
@@ -387,9 +384,7 @@ ggplot(Mask_sum, aes(y=Sum)) +
         axis.line = element_line())
 ```
 **Beschreibung:**
-Der Plot unterstützt die Annahmen anhander Tukey-Fünfnummer Statistik nochmals. Mit Hilfe der Grafik können wir feststellen, 
-dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. 
-Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
+Der Plot unterstützt die Annahmen anhander Tukey-Fünfnummer Statistik nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
 
 
 
@@ -435,24 +430,21 @@ df1 <- similarity_users_melted[similarity_users_melted$Var2 %in% users_num, ]
 colnames(df1) <- c("x", "y", "value")
 ggplot(df1, aes(x = x, y = y, fill = value)) +
   geom_tile() + 
-  theme(axis.title.y=element_blank(),
-        axis.text.x=element_blank(),
+  theme(axis.text.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.x=element_blank(),
         ) +
   ggplot2::ggtitle('Genre-similarties for unseen movies for the first 10 users') +
   ggplot2::xlab('Movie ID') +
+  ggplot2::ylab('User ID') +
   facet_grid(rows = df1$y, scales = "free")
 
 ```
 **Beschreibung:**
 
-Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für User
-
+Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für User.
 In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User. Dort können wir sehen, dass User 1 alle ausgewählten Filme gesehen hat (sortiert nach ID).
-
 Auf der zweiten Grafik sehen wir mehr Informationen über die anderen Filme für Benutzer 1. Es sieht so aus, als ob dieser Benutzer Filme nach Index sortiert ansieht (lol). die anderen Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1.
-
 Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen basierend auf dem Genre haben.
 
 
@@ -464,7 +456,7 @@ dim(similarity_users)
 3.Top-20 Listen pro Nutzer extrahieren.
 ```{r}
 top_top20_recos <- get_topn_recos(similarity_users_melted, 20)
-top_top20_recos
+head(top_top20_recos)
 ```
 
 4.Länge der Top-20 Listen pro Nutzer prüfen.
@@ -576,7 +568,6 @@ top_n_list_selected_users
 ```
 
 ```{r}
-# Mehr distukieren und analysieren.
 ggplot2::ggplot(data = top_n_list_selected_users, 
                 ggplot2::aes(x = factor(User), y = Similarity, , fill=factor(TopN))) + 
   ggplot2::geom_boxplot() +
@@ -585,7 +576,7 @@ ggplot2::ggplot(data = top_n_list_selected_users,
 ```
 **Beschreibung:**
 
-Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Similarity haben zu Filmen, welche man bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. Hier muss man also anpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. Falls man also z.B. eine mindest-Similarity für Empfehlungen einbaut, muss man auch eine Mindest-Anzahl an Empfehlungen einbauen. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser Mndest-Similarity sind.
+Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Similarity haben zu Filmen, welche man bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. Hier muss man also anpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. Falls man also z.B. eine mindest-Similarity für Empfehlungen einbaut, muss man auch eine Mindest-Anzahl an Empfehlungen einbauen. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser Mindest-Similarity sind.
 
 Ein anderer Ansatz wäre auch, dass eine zufällige Empfehlung nicht 100% zufällig ist, sondern einfach ein Film, welcher knapp unter dieser Mindest-Similarity liegt.
 
