@@ -84,7 +84,6 @@ number_of_genres <- movie_genre %>%
   dplyr::select(-title) %>%
   rowSums()
 
-
 ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
   geom_bar() +   
   ggplot2::theme_bw() + 
@@ -95,6 +94,14 @@ ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
                  axis.line = element_line(colour = "black")) +
   ggplot2::scale_x_continuous(breaks = seq(1, 6, by = 1)) + 
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.5)
+
+
+ # Test
+check_dims_genres <- test_that(
+  "Check dims of movie_genre fit with new generated number_of_genres", {
+    expect_equal(dim(movie_genre)[1], nrow(data.frame(data.frame(number_of_genres))))
+     }
+)
 
 ```
 
@@ -116,13 +123,20 @@ combinations <- tmp %>%
  dplyr::count() %>%
  dplyr::arrange(n)
 
+total_unique_combinations <- length(unique(combinations$combinations))
+
+
+combinations$combinations[combinations$n <= 11] <- "Other"
+combinations <-combinations %>% group_by(combinations) %>% summarise(n = sum(n))
+combinations <- combinations[order(combinations$n),]  
+combinations <- rbind(combinations[(nrow(combinations)),], combinations[-(nrow(combinations)),])
+
 # use helper file to transform
 tmp <- turn_into_wide(df = tmp)
 
-total_unique_combinations <- length(unique(combinations$combinations))
 combinations$combinations <- factor(combinations$combinations, levels = combinations$combinations)
- 
-ggplot2::ggplot(tail(combinations, 25), ggplot2::aes(x = n, y = combinations, label = n)) +
+
+ggplot2::ggplot(combinations, ggplot2::aes(x = n, y = combinations, label = n)) +
   ggplot2::geom_segment(ggplot2::aes(x = 0, y = combinations, xend = n, yend = combinations), color = "grey50") +
   ggplot2::geom_point(size=3, color = "lightblue") +
   ggplot2::geom_text(nudge_x = 25, size = 3) +
@@ -133,8 +147,7 @@ ggplot2::ggplot(tail(combinations, 25), ggplot2::aes(x = n, y = combinations, la
   ggplot2::theme(panel.border = element_blank(),
                  axis.line = element_line(colour = "black"))
 
- 
- 
+
  # Test
 check_dims_genres <- test_that(
   "Check dims of genre matrices fit with new generated wide df", {
@@ -144,7 +157,7 @@ check_dims_genres <- test_that(
 
 ```
 **Beschreibung:**
-Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind.
+Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind. Wir können ebenfalls sehen, dass wir viele Genre-Kombinationen von vielen verschiednen Filmen haben.
 
 
 
