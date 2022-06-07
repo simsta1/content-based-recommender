@@ -119,7 +119,11 @@ create_cleveland_plot <- function(user_profiles){
       coord_flip()+
       xlab("") +
       ylab("Percentage recommended vs. watched genre") + 
-      labs(title = paste("Recommendation vs Ground Truth for user", u_id))
+      labs(title = paste("Recommendation vs Ground Truth for user", u_id)) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(panel.border = element_blank(), 
+                     axis.line = element_line())
+
     print(p)
     }
   }

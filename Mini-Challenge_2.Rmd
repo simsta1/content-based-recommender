@@ -140,7 +140,7 @@ combinations$combinations <- factor(combinations$combinations, levels = combinat
 
 ggplot2::ggplot(combinations, ggplot2::aes(x = n, y = combinations, label = n)) +
   ggplot2::geom_segment(ggplot2::aes(x = 0, y = combinations, xend = n, yend = combinations), color = "grey50") +
-  ggplot2::geom_point(size=3, color = "lightblue") +
+  ggplot2::geom_point(size=3, color = "grey") +
   ggplot2::geom_text(nudge_x = 25, size = 3) +
   ggplot2::theme_bw() + 
   ggplot2::xlab("Counts") + 
@@ -285,6 +285,7 @@ ggplot2::ggplot(data = tmp, aes(x = tmp)) +
 ```
 
 **Beschreibung:**
+
 Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes. Man erkennt eine starke Ausprägung der Nullwerte, respektive gar keine Similarity zwischen Nutzer und Filmen. Dies lässt sich mit der These vereinbaren, dass es Nutzer gibt, die fast keine Filme geschaut und vice-versa Filme, die fast nie geschaut wurden. Ohne die starke Ausprägung bei der tiefen Cosine Similaritie wäre das Histogram praktisch normalverteilt.
 
 
@@ -329,7 +330,7 @@ Die Plots zeigt die Verteilung der Similarites zwischen einem User und allen Fil
 MovieLenseMat = as(MovieLense, "matrix")
 MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
 
-image(MovieLenseMat)
+image(MovieLenseMat, )
 image(MovieLenseMat_mask)
 ```
 
@@ -355,15 +356,15 @@ sum_mask_users$User <- factor(sum_mask_users$User, levels = SELECTED_USERS)
 dim(MovieLense)
 
 ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
-  ggplot2::geom_bar(stat="identity", alpha = .7) +   
+  ggplot2::geom_bar(stat="identity", alpha = .9) +   
   ggplot2::geom_text(aes(label=Sum), vjust=1.6, color="white", size=3.5) +
   ggplot2::ggtitle('Sum of unrated Movies of selected Users') +
   ggplot2::theme_bw() +
   ggplot2::theme(panel.border = element_blank(),
                  panel.grid.major = element_blank(),
                  axis.line = element_line(colour = "black")) +
-  ggplot2::ylim(0, max(sum_mask_users$Sum)) +
-  ggplot2::theme_classic()
+  ggplot2::ylim(0, max(sum_mask_users$Sum)) 
+  
 
 ```
 
@@ -376,7 +377,7 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 ```{r}
 summary(as.numeric(Mask_sum$Sum))
 ```
-Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Q3 und Maximum der Daten.
+Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Mittelwert, Q3 und Maximum der Daten.
 Ausserdem sieht man hier auch, dass die  Verteilung eher linksschief sein muss, weil die 75% aller Datenpunkte grösser ist als Q1.
 
 
@@ -395,7 +396,8 @@ ggplot(Mask_sum, aes(y=Sum)) +
 ```
 
 **Beschreibung:**
-Der Plot unterstützt die Annahmen anhander Tukey-Fünfnummer Statistik nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
+
+Der Plot unterstützt die Annahmen der statistischen Kennzahlen nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
 
 
 
@@ -424,13 +426,13 @@ df <- melt(t(similarity_users[1,]))
 colnames(df) <- c("x", "y", "value")
 ggplot(df, aes(x = y, y = x, fill = value)) +
   geom_tile() + 
-  theme(axis.title.y=element_blank(),
-        axis.text.x=element_blank(),
+  theme(axis.text.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank()
         ) +
   ggplot2::ggtitle('Genre-similarties for unseen movies for a selected user') +
-  ggplot2::xlab('Movie ID') 
+  ggplot2::xlab('Movie ID') + ggplot2::ylab("User 1")
 
 similarity_users_melted <- melt(t(similarity_users))
 users_num = c(1,2,3,4,5,6,7,8,9,10)
@@ -444,6 +446,7 @@ ggplot(df1, aes(x = x, y = y, fill = value)) +
   theme(axis.text.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank()
         ) +
   ggplot2::ggtitle('Genre-similarties for unseen movies for the first 10 users') +
   ggplot2::xlab('Movie ID') +
@@ -455,8 +458,10 @@ ggplot(df1, aes(x = x, y = y, fill = value)) +
 **Beschreibung:**
 
 Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für User.
-In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User. Dort können wir sehen, dass User 1 alle ausgewählten Filme gesehen hat (sortiert nach ID).
-Auf der zweiten Grafik sehen wir mehr Informationen über die anderen Filme für Benutzer 1. Es sieht so aus, als ob dieser Benutzer Filme nach Index sortiert ansieht (lol). die anderen Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1.
+In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User. 
+
+In der zweiten Grafik, dass für den User 1 entweder gar keine Ähnlichkeiten zwischen den Filmen und seinem Profil bestehen oder er diese alle gesehen hat und durch den Negativabzug zu 0 wurden. Die weiteren Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1.
+
 Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen basierend auf dem Genre haben.
 
 
@@ -527,7 +532,8 @@ head(min_similarity_top_n_long)
 ggplot2::ggplot(min_similarity_top_n_long, ggplot2::aes(x=MinSimilarity)) + 
   ggplot2::geom_histogram(bins=50)+
   ggplot2::labs(title = "Min Similarity Distrubtion per Top N List")+
-  ggplot2::facet_grid(TopN ~ .)
+  ggplot2::facet_grid(TopN ~ .) +
+  ggplot2::theme_bw()
 ```
 
 **Beschreibung:**
@@ -536,9 +542,6 @@ Im oberen Plot sehen wir, dass der Modus der Mindest-Similarity abnimmt bei eine
 
 ### 4.6. Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
 ```{r}
-# Histogram zuerst, nicht multimodal (bei 1x hügel, boxplot gut, sonst eher histogram.)
-# Hinweis lesen! Vergleich mit Ground Truth (ist der Recommender gut?)
-# Radar plot Topn genres vs ground truth genres.
 top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ]
 top_top20_recos_users$User = top_top20_recos_users$Var2
 top_top20_recos_users$Similarity = top_top20_recos_users$value
@@ -561,7 +564,7 @@ Es ist interessant zu sehen, wie sehr die Top20-Similarity für verschiedene Use
 ```{r}
 top_n_intervall = c(20, 30, 40, 50)
 top_n_col_names = c('Top 20', 'Top 30', 'Top 40', 'Top 50')
-users = c(133, 55)
+users = c(133, 555)
 #create data frame with 0 rows and 5 columns
 top_n_list_selected_users <- data.frame(matrix(ncol = 3, nrow = 0))
 
@@ -586,7 +589,10 @@ ggplot2::ggplot(data = top_n_list_selected_users,
                 ggplot2::aes(x = factor(User), y = Similarity, , fill=factor(TopN))) + 
   ggplot2::geom_boxplot() +
   ggplot2::scale_fill_brewer(palette = "Blues") + 
-  labs(title = "Similarity Distrubtion for selected Users and selected TopN List")
+  labs(title = "Similarity Distrubtion for selected Users and selected TopN List") +
+  ggplot2::theme_bw() +
+  ggplot2::theme(panel.border = element_blank(), 
+                 axis.line = element_line())
 ```
 
 **Beschreibung:**
@@ -594,6 +600,26 @@ ggplot2::ggplot(data = top_n_list_selected_users,
 Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Similarity haben zu Filmen, welche man bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. Hier muss man also anpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. Falls man also z.B. eine mindest-Similarity für Empfehlungen einbaut, muss man auch eine Mindest-Anzahl an Empfehlungen einbauen. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser Mindest-Similarity sind.
 
 Ein anderer Ansatz wäre auch, dass eine zufällige Empfehlung nicht 100% zufällig ist, sondern einfach ein Film, welcher knapp unter dieser Mindest-Similarity liegt.
+
+
+```{r}
+
+user133 <- as.data.frame(similarity_users[133, ])
+colnames(user133) <- c("Similarity")
+
+ggplot2::ggplot(user133, ggplot2::aes(x = Similarity)) +
+  ggplot2::geom_histogram() +
+  ggplot2::theme_bw() + 
+  ggplot2::theme(panel.border = element_blank(), 
+                 axis.line = element_line()) +
+  ggplot2::labs(title = "Similarities of User 133")
+  
+```
+**Beschreibung:**
+
+Der Plot zeigt klar, dass die meisten Similarities sich tatsächlich im Bereich grösser als 0.8 befinden, was im oberen Boxplot der Top-N Empfehlungen pro User eine Streuung von 0 für alle Top-N Resultate impliziert.
+
+
 
 ```{r}
 user_profiles <-  analyze_topn_recos(selected_users, 50)
@@ -603,7 +629,9 @@ create_cleveland_plot(user_profiles)
 
 **Beschreibung:**
 
-Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
+Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! 
+
+Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und eigentlich nur diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen werden, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
 
 
 ----------------------------------------------------------------------------------------------
