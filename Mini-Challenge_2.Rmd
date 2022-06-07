@@ -515,8 +515,8 @@ for (i in 1:4) {
 
   min_similarity_top_n[,top_n_col_names[i]] <- min_top_n_recos$MinSimilarity
 }
-min_similarity_top_n_long = pivot_longer(min_similarity_top_n, cols=top_n_col_names, names_to='TopN', values_to='MinSimilarity')
-min_similarity_top_n_long
+min_similarity_top_n_long <- pivot_longer(min_similarity_top_n, cols=all_of(top_n_col_names), names_to='TopN', values_to='MinSimilarity')
+head(min_similarity_top_n_long)
 ```
 
 ```{r}
@@ -575,6 +575,7 @@ for (i in 1:4) {
     select(User, TopN, Similarity)
   top_n_list_selected_users <- rbind(top_n_list_selected_users,top_n_recos)
 }
+head(top_n_list_selected_users)
 ```
 
 ```{r}
@@ -600,3 +601,10 @@ create_cleveland_plot(user_profiles)
 **Beschreibung:**
 
 Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
+
+
+---------------------------------------------------------
+---------------------------------------------------------
+
+\center © Copyright 2022 Vincenzo Timmel, Simon Staehli, Firat Saritas \center
+---------------------------------------------------------
