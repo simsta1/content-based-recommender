@@ -43,7 +43,7 @@ MovieLense
 ### 1.2. Binäre User-Liked-Items Matrix für alle Nutzer erzeugen.
 ```{r}
 ########### Param ##########
-MINIMUM_RATING = 3
+MINIMUM_RATING = 4
 ##############################
 
 MovieLense_binary <- recommenderlab::binarize(x = MovieLense, minRating = MINIMUM_RATING)
@@ -128,7 +128,7 @@ combinations <- tmp %>%
 total_unique_combinations <- length(unique(combinations$combinations))
 
 
-combinations$combinations[combinations$n <= 11] <- "Other"
+combinations$combinations[combinations$n <= 11] <- "Others combined"
 combinations <-combinations %>% group_by(combinations) %>% summarise(n = sum(n))
 combinations <- combinations[order(combinations$n),]  
 combinations <- rbind(combinations[(nrow(combinations)),], combinations[-(nrow(combinations)),])
