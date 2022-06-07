@@ -95,20 +95,21 @@ ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
                  axis.line = element_line(colour = "black")) +
   ggplot2::scale_x_continuous(breaks = seq(1, 6, by = 1)) + 
   geom_text(aes(label = ..count..), stat = "count", vjust = -0.5)
+```
 
+**Beschreibung:**
 
+Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt. Dies ist jedoch sehr selten und nur bei 3 Filmen der Fall.
+
+```{r}
  # Test
 check_dims_genres <- test_that(
   "Check dims of movie_genre fit with new generated number_of_genres", {
     expect_equal(dim(movie_genre)[1], nrow(data.frame(data.frame(number_of_genres))))
      }
 )
-
 ```
 
-**Beschreibung:**
-
-Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt. Dies ist jedoch sehr selten und nur bei 3 Filmen der Fall.
 
 ```{r}
 tmp <- tidyr::pivot_longer(data = movie_genre, cols = 2:dim(movie_genre)[[2]], names_to = "genre")
@@ -148,26 +149,27 @@ ggplot2::ggplot(combinations, ggplot2::aes(x = n, y = combinations, label = n)) 
   ggplot2::theme(panel.border = element_blank(),
                  axis.line = element_line(colour = "black"))
 
-
- # Test
-check_dims_genres <- test_that(
-  "Check dims of genre matrices fit with new generated wide df", {
-    expect_equal(total_unique_combinations, dim(tmp)[2]-1)
-     }
-)
-
 ```
 
 **Beschreibung:**
 
 Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind. Wir können ebenfalls sehen, dass wir viele andere Genres und Genre-Kombinationen (in "Other") von vielen verschiedenen Filmen haben.
 
+```{r}
+ # Test
+check_dims_genres <- test_that(
+  "Check dims of genre matrices fit with new generated wide df", {
+    expect_equal(total_unique_combinations, dim(tmp)[2]-1)
+     }
+)
+```
+
 
 
 ### 1.7. User-Genre-Profil Matrix mit Nutzerprofilen im Genre-Vektorraum erzeugen.
 ```{r}
 ########## Param ##########
-NORMALIZED_BY_VIEWS <- TRUE
+NORMALIZED_BY_VIEWS <- FALSE
 
 ###########################
 # Convert both into matrices
@@ -231,6 +233,7 @@ plot_user_profiles(user_genre_mat, user_idx = random_idx,
                     sample_size = 8)
 ```
 
+
 **Beschreibung:**
 
 Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots verändert sich wenn der BINARY_THRESHOLD verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung meistens bei dem Genre Drama, was durchaus Sinn macht, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem Genre zu finden sind.
@@ -270,7 +273,7 @@ summary(as.numeric(similarity_matrix))
 ```
 ### 2.4. Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
 ```{r}
-#nicht ganz gleich mi
+#nicht ganz gleich mit dani
 tmp <- as.vector(similarity_matrix)
 tmp <- as.data.frame(tmp)
 
@@ -603,8 +606,6 @@ create_cleveland_plot(user_profiles)
 Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! Es ist natürlich nicht perfekt, da es nicht unendlich viele Filme gibt und die User auch keinen Film empfohlen bekommen möchten, welchen sie schon geschaut haben.
 
 
----------------------------------------------------------
----------------------------------------------------------
+----------------------------------------------------------------------------------------------
 
-\center © Copyright 2022 Vincenzo Timmel, Simon Staehli, Firat Saritas \center
----------------------------------------------------------
+#### © Copyright 2022 Vincenzo Timmel, Simon Staehli, Firat Saritas
