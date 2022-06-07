@@ -622,6 +622,7 @@ Der Plot zeigt klar, dass die meisten Similarities sich tatsächlich im Bereich 
 
 
 ```{r}
+
 user_profiles <-  analyze_topn_recos(selected_users, 50)
 create_cleveland_plot(user_profiles)
 
@@ -631,7 +632,33 @@ create_cleveland_plot(user_profiles)
 
 Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! 
 
-Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und eigentlich nur diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen werden, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
+Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und meistens diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity, aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen werden, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
+
+
+```{r}
+
+
+
+
+user_profiles <-  analyze_topn_recos(selected_users, 50)
+user_profiles <- user_profiles[1:2, ] %>%
+  select(-c(ground_truth, user))
+user_watched_total <- as.data.frame(rowSums(user_profiles))
+user_watched_total$user <- rownames(user_watched_total)
+row.names(user_watched_total) <- NULL
+colnames(user_watched_total) <- c("liked", "user")
+
+ggplot2::ggplot(user_watched_total, aes(x = user, y = liked)) + 
+  geom_col() +
+  ggplot2::theme_bw() + 
+  ggplot2::theme(panel.border = element_blank(), 
+                 axis.line = element_line()) +
+  ggplot2::labs(title = "Counts of Movies Watched") +
+  ggplot2::ylab("Movies liked")
+```
+**Beschreibung:**
+
+Wenn wir einen Vegleich der Anzahl der Filme machen, die die User geliket haben, können wir auch feststellen, dass viel weniger Informationen über die Präferenz des Nutzers 133 vorhanden ist. Dies hat zur Folge, dass weniger Informationen in unser Recommender System als Input geliefert werden, deshalb vermuten wir, dass darum eher grössere Abweichungen zwischen dem empfohlenen Profil zum tatsächlich gesehenen Profil erkennbar sind.
 
 
 ----------------------------------------------------------------------------------------------
