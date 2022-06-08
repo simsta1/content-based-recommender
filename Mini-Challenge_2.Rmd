@@ -218,6 +218,7 @@ dim(user_genre_mat)
 Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu einem bestimmten Genre.
 
 
+
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
 ```{r}
 BINARY_THRESHOLD <- 0
@@ -226,6 +227,7 @@ BINARY_THRESHOLD <- 0
 user_genre_mat_binary <- ifelse(user_genre_mat > BINARY_THRESHOLD, 1, 0)
 random_idx <- sample(seq(1, dim(user_genre_mat_binary)[[1]]), 
                         size = 8)
+
 
 plot_user_profiles(user_genre_mat_binary, user_idx = random_idx, 
                     sample_size = 8)
@@ -249,7 +251,7 @@ similarity_matrix <- calc_cosine_similarity(user_genre_mat, movie_genre_mat)
 # Check similarity results with package coop
 check_similarity_results <- test_that(
   "Check mat dims with users", {
-    expect_equal(similarity_matrix[1,1]  ,coop::cosine(user_genre_mat[1, ] ,movie_genre_mat[1, ]) )
+    expect_equal(similarity_matrix[1,1], coop::cosine(user_genre_mat[1, ] ,movie_genre_mat[1, ]) )
   }
 )
 ```
@@ -485,6 +487,11 @@ top_top20_recos_user_42 <- top_top20_recos[top_top20_recos$Var2 %in% 42, ]
 
 #5-Zahlen Statistik
 fivenum(top_top20_recos_user_42$value)
+```
+**Beschreibung:**
+Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-N Empfehlungen hoch ausfällt.
+
+```{r}
 
 top20_mean_group_size <- top_top20_recos %>%
   group_by(Var2) %>%
@@ -492,10 +499,7 @@ top20_mean_group_size <- top_top20_recos %>%
 
 expect_equal(all(top20_mean_group_size$group_size == 20), TRUE)
 ```
-Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-N Empfehlungen hoch ausfällt.
-
 **Beschreibung:**
-
 Wie erwartet, besteht die Top20 Liste für jeden User aus 20 Filmen.
 
 
@@ -531,7 +535,7 @@ head(min_similarity_top_n_long)
 # Notched boxplot, what is it?
 ggplot2::ggplot(min_similarity_top_n_long, ggplot2::aes(x=MinSimilarity)) + 
   ggplot2::geom_histogram(bins=50)+
-  ggplot2::labs(title = "Min Similarity Distrubtion per Top N List")+
+  ggplot2::labs(title = "Min Similarity Distribution per Top N List")+
   ggplot2::facet_grid(TopN ~ .) +
   ggplot2::theme_bw()
 ```
@@ -543,21 +547,61 @@ Im oberen Plot sehen wir, dass der Modus der Mindest-Similarity abnimmt bei eine
 ### 4.6. Top-20 Empfehlungen für Nutzer “5”, “25”, “50” und “150” visuell evaluieren.
 ```{r}
 top_top20_recos_users <- top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ]
-top_top20_recos_users$User = top_top20_recos_users$Var2
+top_top20_recos_users$user = top_top20_recos_users$Var2
 top_top20_recos_users$Similarity = top_top20_recos_users$value
 
 
 ggplot2::ggplot(top_top20_recos_users, ggplot2::aes(x=Similarity)) + 
   ggplot2::geom_histogram(bins=20)+
-  ggplot2::labs(title = "Similarity Distrubtion for selected Users") +
-  ggplot2::facet_grid(User ~ .) +
+  ggplot2::labs(title = "Similarity Distribution for selected Users") +
+  ggplot2::facet_grid(user ~ .) +
   ggplot2::theme_bw()
 
 ```
 
 **Beschreibung:**
 
-Es ist interessant zu sehen, wie sehr die Top20-Similarity für verschiedene User variiert. Das zeigt uns, dass unser Recommender für verschiedene User verschiedene Empfehlungen macht. 
+Es ist interessant zu sehen, wie sehr die Top20-Similarity für verschiedene User variiert. Das zeigt uns, dass unser Recommender für verschiedene User verschiedene Empfehlungen macht und zumindest in diesem Aspekt funktioniert.
+
+```{r}
+user_profiles <-  analyze_topn_recos(top_top20_recos[top_top20_recos$Var2 %in% c(5, 25, 50, 150), ], 20)
+create_cleveland_plot(user_profiles)
+```
+**Beschreibung:**
+Rot sind unsere Top20-Recommendations und grün ist die Ground Truth. Wir sehen, dass für die User 5, 25, 50 und 150, Filme empfohlen bekommt mit Genres, welche der User über mehrere Filme als gut bewertet hat.
+
+Aus der Distanz können wir auch den `mean squared error` bilden. Der MSE ist somit der Durchschnitt der absoluten Fehler zwischen der Verteilung der geschauten Genres in Prozenten (ground truth) und der Verteilung der Genres der empfohlenen Filme in Prozenten. Es entspricht also der Distanz zwischen den grünen und roten Punkten.
+
+```{r}
+squared_errors <- create_recomm_truth_MSE(user_profiles)
+```
+
+```{r}
+p <-ggplot(data=squared_errors, aes(x=User, y=MSE)) +
+  ggplot2::geom_bar(stat="identity") + 
+  ggplot2::labs(title = "MSE between the Distribution of Genres of watched vs. recommended movies.") +
+  ggplot2::theme_bw()
+p
+mean(squared_errors$MSE)
+   
+```
+
+**Beschreibung:**
+Wir sehen also, dass wir uns überall in einem kleinen Bereich aufhalten. Pro User und Genre hat es im Schnitt ca. einen MSE von 0.0045. Interessant ist der hohe Wert beim User 50.
+
+```{r}
+user_profiles <-  analyze_topn_recos(top_top20_recos[top_top20_recos$Var2 %in% c(50), ], 20)
+create_cleveland_plot(user_profiles)
+```
+**Beschreibung:**
+
+Unser Recommender empfiehlt sehr oft Romances. Eine Vermutung ist, dass das Genre "Drama-Romance" sehr oft vorkommt. Da der User `50` Drama und Romances gut bewertet hat, schaut der Recommender, dass diese auch empfohlen werden. Wenn wir uns die Top20 Liste vom user `50` anschauen, sehen wir da auch nur "Drama-Romances". Ebenfalls hat User 50 nur 20 Filme als gut bewertet, 7 davon in Drama und 3 davon in Romance und somit bekommt er zuerst Filme empfohlen, welche diese beiden Genres auch beinhalten. Hier ist nun die Frage, ob es Optimal ist, dass der User `50` nur Drama-Romances empfohlen kommt.
+
+```{r}
+# Anzahl als gut Bewertete Filme pro Genre.
+user_genre_mat[50,] 
+```
+
 
 
 ### 4.7. Für Nutzer “133” und “555” Profil mit Top-N Empfehlungen für N = 20, 30, 40, 50 analysieren, visualisieren und diskutieren.
@@ -578,18 +622,19 @@ for (i in 1:4) {
   top_n_recos$Similarity = top_n_recos$value
   top_n_recos$TopN = top_n_col_names[i]
   top_n_recos <- top_n_recos %>%
-    select(User, TopN, Similarity)
+    select(User, TopN, Similarity) %>%
+    arrange(desc(Similarity))
   top_n_list_selected_users <- rbind(top_n_list_selected_users,top_n_recos)
 }
-head(top_n_list_selected_users)
+top_n_list_selected_users
 ```
 
 ```{r}
 ggplot2::ggplot(data = top_n_list_selected_users, 
-                ggplot2::aes(x = factor(User), y = Similarity, , fill=factor(TopN))) + 
+                ggplot2::aes(x = factor(User), y = Similarity, fill=factor(TopN))) + 
   ggplot2::geom_boxplot() +
   ggplot2::scale_fill_brewer(palette = "Blues") + 
-  labs(title = "Similarity Distrubtion for selected Users and selected TopN List") +
+  labs(title = "Similarity Distribution for selected Users and selected TopN List") +
   ggplot2::theme_bw() +
   ggplot2::theme(panel.border = element_blank(), 
                  axis.line = element_line())
@@ -617,29 +662,104 @@ ggplot2::ggplot(user133, ggplot2::aes(x = Similarity)) +
 ```
 **Beschreibung:**
 
-Der Plot zeigt klar, dass die meisten Similarities sich tatsächlich im Bereich grösser als 0.8 befinden, was im oberen Boxplot der Top-N Empfehlungen pro User eine Streuung von 0 für alle Top-N Resultate impliziert.
-
-
+Der Plot zeigt klar, dass die meisten Similarities sich tatsächlich im Bereich grösser als `0.8333333` befinden, was im oberen Boxplot der Top-N Empfehlungen pro User eine Streuung von 0 für alle Top-N Resultate impliziert. 
+Wir können uns da auch noch das Minimum der Similarity von der Top50 Liste anschauen, um dies zu bestätigen.
+```{r}
+top_50_user_133 = head(arrange(user133, desc(Similarity)), 50)
+min(top_50_user_133)
+```
+**Beschreibung:**
+Unsere Annahme stimmt also; User 133 hat viele Similarites mit dem Wert 0.8333... Da unsere Recommendations über Genres laufen, können wir uns anschauen, ob es da eine grosse Überschneidung gibt zwischen den Top50 Filmen und ihren Genres.
 
 ```{r}
+top_50_user_133$title <- rownames(top_50_user_133)
+top_50_user_133_genre <- left_join(top_50_user_133, movie_genre, by='title')
+# Keep only columns which have at least one 1 in any row.
+top_50_user_133_genre = top_50_user_133_genre[, colSums(top_50_user_133_genre == 1) > 0]
+top_50_user_133_genre
+```
 
-user_profiles <-  analyze_topn_recos(selected_users, 50)
+**Beschreibung:**
+Ja, es stimmt! Die Top50 Resultate vom User 133 besteht nur aus dem Filmen mit dem Genre Comedy und Drama und zwar immer beide zusammen. Die `0.8333333` entsteht somit aus der Summe der Bewertungen pro Genre für den User `133` und der Genreverteilung dieser Top50-Filme. 
+
+Cosine Similarity vom Comedy-Drama `Doom Generation, The (1995)` (ID 34) und dem User `133` und überprüfen, dass es `0.8333333` gibt.
+
+```{r}
+coop::cosine(user_genre_mat[133, ], movie_genre_mat[34, ])
+```
+```{r}
+user_profiles <-  analyze_topn_recos(selected_users, 5)
 create_cleveland_plot(user_profiles)
-
 ```
 
 **Beschreibung:**
 
-Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 55 War, Thriller, Sci-Fi, Drama, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! 
+Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 555 Triller, Drama, Comedy, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! 
 
 Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und meistens diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity, aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen werden, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
 
+Wir können für die Top20, 30, 40 und 50 (und noch mehr, damit wir das Verhalten des MSE besser verstehen) je den MSE über den User `133` und `555` berechnen.
+
 
 ```{r}
+top_n_intervall = c(20, 30, 40, 50)
+top_n_col_names = c('MSE Top 20', 'MSE Top 30', 'MSE Top 40', 'MSE Top 50')
+users = c(133, 555)
+#create data frame with 0 rows and 5 columns
+top_n_list_selected_users <- data.frame(matrix(ncol = 2, nrow = 0))
 
 
+for (i in 1:length(top_n_col_names)) {
+  top_n_recos <- analyze_topn_recos(similarity_users_melted[similarity_users_melted$Var2 %in% users, ],  top_n_intervall[i])
+  top_n_recos <- create_recomm_truth_MSE(top_n_recos)
+  top_n_recos$TopN <- top_n_col_names[i]
+  top_n_recos <- top_n_recos %>%
+    group_by(TopN) %>%
+    summarise(MSE = mean(MSE))
+  
+  top_n_list_selected_users <- rbind(top_n_list_selected_users, top_n_recos)
+}
+
+p<-ggplot(data=top_n_list_selected_users, aes(x=TopN, y=MSE)) +
+  ggplot2::geom_bar(stat="identity") + 
+  ggplot2::labs(title = "TopN MSE Distribution of Genres of Watched vs. Recommended movies.") +
+  ggplot2::theme_bw()
+p
+```
+**Beschreibung:**
+
+Wir sehen, dass der MSE ca. leicht abnimmt, wenn das N von TopN grösser wird. Dies lässt sich dadurch erklären, dass es nicht immer eine perfekte Genre-Verteilung gibt für eine TopN-Liste. Desto mehr Möglichkeiten der Recommender hat, Empfehlungen zu machen, desto mehr nähert sich die Verteilung der Genres vom Recommender an die perfekte Verteilung an. Falls aber das N zu gross wird, nimmt der Fehler zu, da es nur noch Filme empfehlen kann, welche gar keine Überschneidung haben mit den "Lieblingsgenres" der Benutzer. Wir können uns das hier anschauen:
+
+```{r}
+top_n_intervall = c(10, 100, 200)
+top_n_col_names = c('MSE Top 10', 'MSE Top 100', 'MSE Top 200')
+users = c(133, 555)
+#create data frame with 0 rows and 5 columns
+top_n_list_selected_users <- data.frame(matrix(ncol = 2, nrow = 0))
 
 
+for (i in 1:length(top_n_col_names)) {
+  top_n_recos <- analyze_topn_recos(similarity_users_melted[similarity_users_melted$Var2 %in% users, ],  top_n_intervall[i])
+  top_n_recos <- create_recomm_truth_MSE(top_n_recos)
+  top_n_recos$TopN <- top_n_col_names[i]
+  top_n_recos <- top_n_recos %>%
+    group_by(TopN) %>%
+    summarise(MSE = mean(MSE))
+  
+  top_n_list_selected_users <- rbind(top_n_list_selected_users, top_n_recos)
+}
+
+p<-ggplot(data=top_n_list_selected_users, aes(x=TopN, y=MSE)) +
+  ggplot2::geom_bar(stat="identity") + 
+  ggplot2::labs(title = "TopN MSE Distribution of Genres of Watched vs. Recommended movies.") +
+  ggplot2::theme_bw()
+p
+```
+**Beschreibung:**
+
+Interessanterweise hat es also ein Minimum für den MSE. Daraus liesse sich theoretischerweise ein optimales N pro User erstellen.
+
+```{r}
 user_profiles <-  analyze_topn_recos(selected_users, 50)
 user_profiles <- user_profiles[1:2, ] %>%
   select(-c(ground_truth, user))
@@ -658,9 +778,23 @@ ggplot2::ggplot(user_watched_total, aes(x = user, y = liked)) +
 ```
 **Beschreibung:**
 
-Wenn wir einen Vegleich der Anzahl der Filme machen, die die User geliket haben, können wir auch feststellen, dass viel weniger Informationen über die Präferenz des Nutzers 133 vorhanden ist. Dies hat zur Folge, dass weniger Informationen in unser Recommender System als Input geliefert werden, deshalb vermuten wir, dass darum eher grössere Abweichungen zwischen dem empfohlenen Profil zum tatsächlich gesehenen Profil erkennbar sind.
+Wenn wir einen Vegleich der Anzahl der Filme machen, die die User geliked haben, können wir auch feststellen, dass viel weniger Informationen über die Präferenz des Nutzers 133 vorhanden ist. Dies hat zur Folge, dass weniger Informationen in unser Recommender System als Input geliefert werden, deshalb vermuten wir, dass darum eher grössere Abweichungen zwischen dem empfohlenen Profil zum tatsächlich gesehenen Profil erkennbar sind. Ebenfalls wird duch diese wenigen guten Bewertungen das `genre-Profil` von User 133 sehr einseitig.
 
+
+```{r}
+# Create Binaray User-Genre Matrix
+plot_user_profiles(user_genre_mat, user_idx = c(133, 555), 
+                    sample_size = 4)
+```
+**Beschreibung:**
+Wie wir sehen, ist das `genre-profil` vom User 133 viel weniger ausgepräft als vom User 555. 
 
 ----------------------------------------------------------------------------------------------
 
 #### © Copyright 2022 Vincenzo Timmel, Simon Staehli, Firat Saritas
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

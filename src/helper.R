@@ -104,12 +104,7 @@ create_cleveland_plot <- function(user_profiles){
     user_profile_select <- t(user_profile_select)
     user_profile_select <- head(user_profile_select, dim(user_profile_select)[[1]] - 1) %>%
       as.data.frame()
-    colnames(user_profile_select) <- c("ground_truth", "recommendation")
-    
-    user_profile_select$ground_truth <- user_profile_select$ground_truth / sum(user_profile_select$ground_truth) 
-    user_profile_select$recommendation <- user_profile_select$recommendation / sum(user_profile_select$recommendation) 
-    user_profile_select$genre <- rownames(user_profile_select)
-    rownames(user_profile_select) <- NULL
+    user_profile_select <- create_recomm_truth_percentages(user_profile_select)
     
     # Plot
     p <- ggplot(user_profile_select) +
@@ -128,6 +123,66 @@ create_cleveland_plot <- function(user_profiles){
     }
   }
 
+#' Function which creates the ground truth and recommendation of genres as percentages.
+#'
+#' @param user_profile_select dataframe containing the number of genres of movies of the ground truth and our recommendations.
+#'
+#' @return user_profile_select with ground_truth of genres vs genres of our recommendations as percentages.
+create_recomm_truth_percentages <- function(user_profile_select){
+  # Plot cleveland plot with relevant difference percentage of prediced movies
+
+  colnames(user_profile_select) <- c("ground_truth", "recommendation")
+  
+  user_profile_select$ground_truth <- user_profile_select$ground_truth / sum(user_profile_select$ground_truth) 
+  user_profile_select$recommendation <- user_profile_select$recommendation / sum(user_profile_select$recommendation) 
+  user_profile_select$genre <- rownames(user_profile_select)
+  rownames(user_profile_select) <- NULL
+  return(user_profile_select)
+}
+
+#' Function which creates the ground truth and recommendation of genres as percentages and calculates the MAE from it.
+#'
+#' @param user_profiles dataframe containing the number of genres of movies of the ground truth and our recommendations.
+#'
+#' @return user_profile_select with ground_truth of genres vs genres of our recommendations as percentages.
+create_recomm_truth_MSE <- function(user_profiles){
+  # Plot cleveland plot with relevant difference percentage of prediced movies
+  
+  squared_errors <- vector( "numeric" , length(unique(user_profiles$user)))
+  user_idx = 1
+  for (u_id in unique(user_profiles$user)){
+    user_profile_select <- user_profiles[user_profiles$user == u_id, ] %>%
+      select(-c(user)) 
+    
+    rownames(user_profile_select) <- user_profile_select$ground_truth 
+    user_profile_select <- t(user_profile_select)
+    user_profile_select <- head(user_profile_select, dim(user_profile_select)[[1]] - 1) %>%
+      as.data.frame()
+    user_profile_select <- create_recomm_truth_percentages(user_profile_select)
+    squared_errors[user_idx] <- MSE(user_profile_select$ground_truth, user_profile_select$recommendation)
+    user_idx = user_idx + 1
+    
+  }
+  squared_errors <- data.frame(User = unique(user_profiles$user), MSE = squared_errors)
+  return(squared_errors)
+}
+
+
+squared_errors <- vector( "numeric" , length(unique(user_profiles$user)))
+user_idx = 1
+for (u_id in unique(user_profiles$user)){
+  user_profile_select <- user_profiles[user_profiles$user == u_id, ] %>%
+    select(-c(user)) 
+  
+  rownames(user_profile_select) <- user_profile_select$ground_truth 
+  user_profile_select <- t(user_profile_select)
+  user_profile_select <- head(user_profile_select, dim(user_profile_select)[[1]] - 1) %>%
+    as.data.frame()
+  user_profile_select <- create_recomm_truth_percentages(user_profile_select)
+  squared_errors[user_idx] <- MAE(user_profile_select$ground_truth, user_profile_select$recommendation)
+  user_idx = user_idx + 1
+  
+}
 
 #' Function returns top n recommendations.
 #'
