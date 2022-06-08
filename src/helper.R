@@ -168,22 +168,6 @@ create_recomm_truth_MSE <- function(user_profiles){
 }
 
 
-squared_errors <- vector( "numeric" , length(unique(user_profiles$user)))
-user_idx = 1
-for (u_id in unique(user_profiles$user)){
-  user_profile_select <- user_profiles[user_profiles$user == u_id, ] %>%
-    select(-c(user)) 
-  
-  rownames(user_profile_select) <- user_profile_select$ground_truth 
-  user_profile_select <- t(user_profile_select)
-  user_profile_select <- head(user_profile_select, dim(user_profile_select)[[1]] - 1) %>%
-    as.data.frame()
-  user_profile_select <- create_recomm_truth_percentages(user_profile_select)
-  squared_errors[user_idx] <- MAE(user_profile_select$ground_truth, user_profile_select$recommendation)
-  user_idx = user_idx + 1
-  
-}
-
 #' Function returns top n recommendations.
 #'
 #' @param selected_users melted similarity matrix of selected users
