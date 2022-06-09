@@ -324,11 +324,11 @@ Die Plots zeigt die Verteilung der Similarites zwischen einem User und allen Fil
 
 ### 3.1. Bewertete Filme maskieren, d.h. “Negativabzug” der User-Items Matrix erzeugen, um anschliessend Empfehlungen herzuleiten.
 ```{r}
-MovieLenseMat = as(MovieLense, "matrix")
-MovieLenseMat_mask = ifelse(is.na(MovieLenseMat), 1, 0)
+MovieLenseMat <- as(MovieLense, "matrix")
+MovieLenseMat_mask <- ifelse(is.na(MovieLenseMat), 1, 0)
 
-image(MovieLenseMat, )
-image(MovieLenseMat_mask)
+image(MovieLenseMat, col = gray.colors(2), main = "Movie Lense Matrix")
+image(MovieLenseMat_mask, col = gray.colors(2), main = "Binary Movie Lense Matrix")
 ```
 
 **Beschreibung:**
