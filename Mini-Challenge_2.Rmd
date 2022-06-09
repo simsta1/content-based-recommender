@@ -76,7 +76,8 @@ head(movie_genre)
 ```{r}
 dim(movie_genre)
 ```
-
+**Beschreibung**
+Diese Dimensionen ergeben Sinn; Wir haben 1664 Filme und 19 Genres im Datensatz (eine Säule wird für den Filmnamen gebraucht).
 
 ### 1.6. Anzahl unterschiedlicher Filmprofile bestimmen und visualisieren.
 ```{r}
@@ -98,10 +99,10 @@ ggplot(data.frame(data.frame(number_of_genres)), aes(number_of_genres)) +
 
 **Beschreibung:**
 
-Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. Die Anzahl der unterschiedlichen Genres pro Film reicht sogar bis maximal 6 Filme insgesamt. Dies ist jedoch sehr selten und nur bei 3 Filmen der Fall.
+Anhand dieses Plots kann man sehen, dass die Vielzahl der Filme grundsätzlich ein Genre haben. Es gibt jedoch zahlreiche Filme, die mit mehr als einem Genre beschrieben sind. 3 Filme haben gar 6 verschiedene Genres.
 
 ```{r}
- # Test
+ # Test that the number of Genres are consistent between objects.
 check_dims_genres <- test_that(
   "Check dims of movie_genre fit with new generated number_of_genres", {
     expect_equal(dim(movie_genre)[1], nrow(data.frame(data.frame(number_of_genres))))
@@ -124,7 +125,8 @@ combinations <- tmp %>%
  dplyr::arrange(n)
 
 total_unique_combinations <- length(unique(combinations$combinations))
-
+total_unique_combinations
+all_combinations <- combinations
 
 combinations$combinations[combinations$n <= 11] <- "Others combined"
 combinations <-combinations %>% group_by(combinations) %>% summarise(n = sum(n))
@@ -151,7 +153,7 @@ ggplot2::ggplot(combinations, ggplot2::aes(x = n, y = combinations, label = n)) 
 
 **Beschreibung:**
 
-Der Plot zeigt die Anzahl der Counts pro Genre. Der Plot zeigt, dass das Genre "Drama" und "Comedy" klar die meisten Filme besitzen. Es hat sehr wenig Filme in den Bereichen "unkown", was gut ist. Gemäss dem vorherigen Plot wird die Grafik auch getrübt, dadurch, dass gewisse Filme über mehrere Genres verfügen. Es könnte sein, dass es viele Filme im Datensatz gibt, die nicht primär nur "Drama" Filme sind. Wir können ebenfalls sehen, dass wir viele andere Genres und Genre-Kombinationen (in "Other") von vielen verschiedenen Filmen haben.
+Der Plot zeigt die Anzahl der Genres in unserem Datensatz. Ingesamten kommen Filme mit "Drama" und "Comedy" als Genre am häufigsten vor. Falls eine Kombination weniger als 11 mal vorkommt, wird diese zusammengfasst als "Others combined", da sonst der obere Plot aus 216 Kombinationen bestehen wurde.
 
 ```{r}
  # Test
@@ -203,8 +205,7 @@ check_mat_dim_out <- test_that(
   }
 )
 ```
-Achtung! Die Werte können grössere Werte als 1 pro User annehmen trotz Normalisierung der Gesamtviews per User, da gewisse Filme über mehrere
-Genres verfügen.
+Achtung! Die Werte können, trotz Normalisierung der Views, grösser als 1 sein, da gewisse Filme über mehrere Genres verfügen.
 
 
 8.Dimension der User-Genre-Profil Matrix prüfen und ausgeben.
@@ -212,8 +213,9 @@ Genres verfügen.
 dim(user_genre_mat)
 ```
 
-Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu einem bestimmten Genre.
+**Beschreibung**
 
+Die Matrix zeigt über die Reihen hinweg alle User und über die Spalten hinweg alle erzeugten Scores bezüglich ihrer Relation zu einem bestimmten Genre. Wir haben 943 User und 19 Genres.
 
 
 9.Anzahl unterschiedlicher Nutzerprofile bestimmen, wenn Stärke der GenreKombination (a) vollständig bzw. (b) nur binär berücksichtigt wird.
@@ -235,7 +237,7 @@ plot_user_profiles(user_genre_mat, user_idx = random_idx,
 
 **Beschreibung:**
 
-Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots verändert sich wenn der BINARY_THRESHOLD verändert wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung meistens bei dem Genre Drama, was durchaus Sinn macht, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem Genre zu finden sind.
+Die beiden Plots unterscheiden sich stark in ihren Wertebereichen. Der Wertebereich des binärisierten Plots reicht bei jedem Nutzer von 0 bis nach 1. Die Grafik des binären Plots verändert sich, falls der BINARY_THRESHOLD angepasst wird. Der Plot mit den normalen Ratings sieht wie erwartet aus. Die Spiderdiagramme zeigen die stärkste Ausprägung meistens bei dem Genre Drama, da es das meistgesehene Genre im Datensatz ist und auch am meisten Filme unter diesem Genre vorkommen.
 
 
 ## 2. Ähnlichkeit von Nutzern und Filmen
@@ -270,6 +272,13 @@ check_mat_dim <- test_that(
 ```{r}
 summary(as.numeric(similarity_matrix))
 ```
+**Beschreibung**
+Interessant sind die 1664 NA's. Diese kommen vom User `685`. Wir sehen, dass der User `685` keine Filme als gut bewertet hat und somit entstehen bei der similarity_matrix für den User `685` nur NA's, da er keine "Lieblingsgenres" hat.
+
+```{r}
+user_genre_mat[685,]
+```
+
 ### 2.4. Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot visualisieren.
 ```{r}
 tmp <- as.vector(similarity_matrix)
@@ -284,7 +293,7 @@ ggplot2::ggplot(data = tmp, aes(x = tmp)) +
 
 **Beschreibung:**
 
-Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes. Man erkennt eine starke Ausprägung der Nullwerte, respektive gar keine Similarity zwischen Nutzer und Filmen. Dies lässt sich mit der These vereinbaren, dass es Nutzer gibt, die fast keine Filme geschaut und vice-versa Filme, die fast nie geschaut wurden. Ohne die starke Ausprägung bei der tiefen Cosine Similaritie wäre das Histogram praktisch normalverteilt.
+Der Plot zeigt die Verteilung der berechneten Ähnlichkeitsmasse pro User und Film innerhalb des Datensatzes. Man erkennt eine starke Ausprägung der Nullwerte, respektive gar keine Similarity zwischen Nutzer und Filmen. Dies lässt sich mit der These vereinbaren, dass es Nutzer gibt, die fast keine Filme geschaut und vice-versa Filme, die fast nie geschaut wurden. Ohne die starke Ausprägung bei der tiefen Cosine Similaritie wäre das Histogram ggf. normalverteilt.
 
 
 ### 2.5. Cosinus-Ähnlichkeiten von Nutzern und Filmen mit Dichteplot für Nutzer “241”, “414”, “477”, “526”, “640” und “710” visualisieren.
@@ -317,7 +326,7 @@ ggplot2::ggplot(data = user_selection, ggplot2::aes(x = similarity)) +
 
 **Beschreibung:**
 
-Die Plots zeigt die Verteilung der Similarites zwischen einem User und allen Filmen. Auf der rechten Seite ist die jeweilige ID des Users verzeichnet. Die Daten wurden anhand eines Boxplots visualisiert, um Unterschiede zwischen den Usern besser zu erkennen. Auf der ersten Visualisierung (Boxplot) kann man anhand des Notches (95% Konfidenzintervall vom Median) erkennen, dass sich die Nutzer statistisch signifikant voneinander unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere Auffälligkeit sind die einzelnen Ausreisser der Ähnlickeitsmasse von Nutzer 640, die aber auch auf die kleine Streuung der Similarities für diesen Nutzer zurückzuführen sind. Auf der zweiten Visualisierung (Dichteplot) sehen wir das wir jeweils bei jedem Nutzer mehrere Ausprägungen haben. DIese sind jeh nach Nutzer unterschiedlich stark ausgeprägt und verteilt.
+Die Plots zeigt die Verteilung der Similarites zwischen einem User und allen Filmen. Auf der rechten Seite ist die jeweilige ID des Users verzeichnet. Die Daten wurden anhand eines Boxplots visualisiert, um Unterschiede zwischen den Usern besser zu erkennen. Auf der ersten Visualisierung (Boxplot) kann man anhand des Notches (95% Konfidenzintervall vom Median) erkennen, dass sich die Nutzer statistisch signifikant voneinander unterscheiden hinsichtlich ihrer Ähnlichkeit zwischen den Filmen. Eine weitere Auffälligkeit sind die einzelnen Ausreisser der Ähnlickeitsmasse von Nutzer `640`, die aber auch auf die kleine Streuung der Similarities für diesen Nutzer zurückzuführen sind. Auf der zweiten Visualisierung (Dichteplot) sehen wir das wir jeweils bei jedem Nutzer mehrere Ausprägungen haben. Diese sind jeh nach Nutzer unterschiedlich stark ausgeprägt und verteilt.
 
 
 ## 3. Empfehlbare Filme
@@ -333,8 +342,7 @@ image(MovieLenseMat_mask, col = gray.colors(2), main = "Binary Movie Lense Matri
 
 **Beschreibung:**
 
-Oben können wir die beiden Matrizen als Bild betrachten: Das Erste ist der normale Movielense-Datensatz und das Zweite ist der "Negativabzug". Im "Negativabzug" sind alle NA-Werte eine 1 und alle anderen eine 0. Da der durchschnittliche Nutzer nur wenige Filme bewertet, hat das erste Bild nur wenige Datenpunkte. Das Zweite ist genau das Gegenteil davon.
-
+Oben können wir die beiden Matrizen als Bild betrachten: Das Erste ist der normale Movielense-Datensatz und das Zweite ist der "Negativabzug". Im "Negativabzug" sind alle NA-Werte eine 1 und alle anderen eine 0. Da der durchschnittliche Nutzer nur wenige Filme bewertet, hat das erste Bild nur wenige Datenpunkte. 
 
 
 ### 3.2. Zeilensumme des “Negativabzuges” der User-Items Matrix für die User “5”, “25”, “50” und “150” ausgeben.
@@ -367,7 +375,7 @@ ggplot(data=sum_mask_users, aes(x=User, y=Sum)) +
 
 **Beschreibung:**
 
-Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das liegt daran, dass wir uns die Filme ansehen, die von den Nutzern nicht bewertet wurden. Da es so viele verschiedene Filme gibt (1664), ist es normal, dass jeder eine so hohe Anzahl an nicht bewerteten Filmen hat. Zum Beispiel können wir sagen, dass der Nutzer 5 die meisten Filme bewertet hat und deshalb die niedrigste Anzahl an nicht bewerteten Filmen aufweist.
+Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das liegt daran, dass wir uns die Filme ansehen, die von den Nutzern nicht bewertet wurden. Da es so viele verschiedene Filme gibt (1664), ist es normal, dass jeder eine so hohe Anzahl an nicht bewerteten Filmen hat. Zum Beispiel können wir sagen, dass der Nutzer `5` die meisten Filme bewertet hat und deshalb die niedrigste Anzahl an nicht bewerteten Filmen aufweist.
 
 
 ### 3.3. 5-Zahlen Statistik der Zeilensumme des “Negativabzuges” der User-Items Matrix bestimmen.
@@ -375,8 +383,7 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 summary(as.numeric(Mask_sum$Sum))
 ```
 Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Mittelwert, Q3 und Maximum der Daten.
-Ausserdem sieht man hier auch, dass die  Verteilung eher linksschief sein muss, weil die 75% aller Datenpunkte grösser ist als Q1.
-
+Ausserdem sieht man hier auch, dass die Verteilung eher linksschief sein muss, da das Minimum weiter weg vom Q1 ist, als das Maximum vom Q3.
 
 
 ```{r}
@@ -395,7 +402,6 @@ ggplot(Mask_sum, aes(y=Sum)) +
 **Beschreibung:**
 
 Der Plot unterstützt die Annahmen der statistischen Kennzahlen nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
-
 
 
 ## 4. Top-N Empfehlungen
@@ -452,23 +458,27 @@ ggplot(df1, aes(x = x, y = y, fill = value)) +
 
 Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für verschiedene Nutzer.
 
-In der ersten Grafik sehen wir zunächst 5 Filme und die ersten 5 User.
+In der ersten Grafik sehen wir die ersten 5 Filme und User.
 
-In der zweiten Grafik, dass für den User 1 entweder gar keine Ähnlichkeiten zwischen den Filmen und seinem Profil bestehen oder er diese alle gesehen hat und durch den Negativabzug zu 0 wurden. Die weiteren Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1.
+In der zweiten Grafik sieht man, dass es für den User 1 entweder gar keine Ähnlichkeiten zwischen den Filmen und seinem Profil besteht oder er diese alle gesehen hat und durch den Negativabzug zu 0 wurden. Die weiteren Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1. Es könnte also sein, dass der User 1 die Filme nach ID anschaut (ggf. wurde die Movie-ID auch nach dem User 1 erzeugt?)
 
-Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen basierend auf dem Genre haben.
+Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen erhalten.
 
 
 ### 4.2. Dimension der Matrix für die Bewertung aller Filme prüfen.
 ```{r}
 dim(similarity_users)
 ```
+**Beschreibung**
+Diese Dimensionen der Similarity ergeben Sinn: 943 User, 1664 Filme.
 
 ### 4.3. Top-20 Listen pro Nutzer extrahieren.
 ```{r}
 top_top20_recos <- get_topn_recos(similarity_users_melted, 20)
 head(top_top20_recos)
 ```
+
+`Var1` entspricht dem `Movie-title`, `Var2` entspricht der `User-ID` und `value` der Similarity. 
 
 ### 4.4. Länge der Top-20 Listen pro Nutzer prüfen.
 ```{r}
@@ -480,10 +490,9 @@ fivenum(top_top20_recos_user_42$value)
 ```
 
 **Beschreibung:**
-Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-N Empfehlungen hoch ausfällt.
+Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-20 Empfehlungen hoch ausfallen, da sonst der Recommender nicht funktioniert (oder es keine Filme mehr gibt für diesen spezifischen User).
 
 ```{r}
-
 top20_mean_group_size <- top_top20_recos %>%
   group_by(Var2) %>%
   summarise(group_size = n())
@@ -563,7 +572,7 @@ create_cleveland_plot(user_profiles)
 **Beschreibung:**
 Rot sind unsere Top20-Recommendations und grün ist die Ground Truth. Wir sehen, dass für die User 5, 25, 50 und 150, Filme empfohlen bekommt mit Genres, welche der User über mehrere Filme als gut bewertet hat.
 
-Aus der Distanz können wir auch den `mean squared error` bilden. Der MSE ist somit der Durchschnitt der absoluten Fehler zwischen der Verteilung der geschauten Genres in Prozenten (ground truth) und der Verteilung der Genres der empfohlenen Filme in Prozenten. Es entspricht also der Distanz zwischen den grünen und roten Punkten.
+Aus der Distanz können wir auch den `mean squared error` bilden. Der MSE ist somit der Durchschnitt der `squared error` zwischen der Verteilung der geschauten Genres in Prozenten (ground truth) und der Verteilung der Genres der empfohlenen Filme in Prozenten. Es entspricht also der `squared distance` zwischen den grünen und roten Punkten im oberen Plot.
 
 ```{r}
 squared_errors <- create_recomm_truth_MSE(user_profiles)
@@ -589,10 +598,10 @@ create_cleveland_plot(user_profiles)
 
 **Beschreibung:**
 
-Unser Recommender empfiehlt sehr oft Romances. Eine Vermutung ist, dass das Genre "Drama-Romance" sehr oft vorkommt. Da der User `50` Drama und Romances gut bewertet hat, schaut der Recommender, dass diese auch empfohlen werden. Wenn wir uns die Top20 Liste vom user `50` anschauen, sehen wir da auch nur "Drama-Romances". Ebenfalls hat User 50 nur 20 Filme als gut bewertet, 7 davon in Drama und 3 davon in Romance und somit bekommt er zuerst Filme empfohlen, welche diese beiden Genres auch beinhalten. Hier ist nun die Frage, ob es Optimal ist, dass der User `50` nur Drama-Romances empfohlen kommt.
+Unser Recommender empfiehlt sehr oft Romances. Eine Vermutung ist, dass das Genre "Drama-Romance" sehr oft vorkommt. Da der User `50` Drama und Romances gut bewertet hat, schaut der Recommender, dass diese auch empfohlen werden. Wenn wir uns die Top20 Liste vom user `50` anschauen, sehen wir da auch nur "Drama-Romances". Ebenfalls hat User `50` nur 20 Filme als gut bewertet, 7 davon in Drama und 3 davon in Romance. Somit bekommt er zuerst Filme empfohlen, welche diese beiden Genres auch beinhalten. Hier ist nun die Frage, ob es Optimal ist, dass der User `50` nur Drama-Romances empfohlen kommt.
 
 ```{r}
-# Anzahl als gut Bewertete Filme pro Genre.
+# Anzahl als gut Bewertete Filme pro Genre für den USer 50.
 user_genre_mat[50,] 
 ```
 
@@ -636,9 +645,10 @@ ggplot2::ggplot(data = top_n_list_selected_users,
 
 **Beschreibung:**
 
-Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Similarity haben zu Filmen, welche man bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. Hier muss man also anpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. Falls man also z.B. eine mindest-Similarity für Empfehlungen einbaut, muss man auch eine Mindest-Anzahl an Empfehlungen einbauen. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser Mindest-Similarity sind.
+Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Genre-Similarity haben zu Filmen, welche man als gut bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. 
+Hier muss man also aufpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. 
 
-Ein anderer Ansatz wäre auch, dass eine zufällige Empfehlung nicht 100% zufällig ist, sondern einfach ein Film, welcher knapp unter dieser Mindest-Similarity liegt.
+Eine Möglichkeit wäre, dass man das N von TopN pro User anhand einer mindest-Similarity berechnet. N soll man also so wählen, dass die tiefeste Similarity für den User nicht einen Threshold unterschreitet. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser mindest-Similarity sind.
 
 
 ```{r}
@@ -657,8 +667,8 @@ ggplot2::ggplot(user133, ggplot2::aes(x = Similarity)) +
 
 **Beschreibung:**
 
-Der Plot zeigt klar, dass die meisten Similarities sich tatsächlich im Bereich grösser als `0.8333333` befinden, was im oberen Boxplot der Top-N Empfehlungen pro User eine Streuung von 0 für alle Top-N Resultate impliziert. 
-Wir können uns da auch noch das Minimum der Similarity von der Top50 Liste anschauen, um dies zu bestätigen.
+Der Plot zeigt klar, dass die meisten Similarities vom User `133` tatsächlich den Wert `0.8333333` haben, was im oberen Boxplot der Top-N Empfehlungen pro User eine Streuung von 0 für alle Top-N Resultate impliziert. 
+Wir können uns da auch noch das Minimum der Similarity von der Top50 Liste vom User `133` anschauen, um dies zu bestätigen.
 
 ```{r}
 top_50_user_133 = head(arrange(user133, desc(Similarity)), 50)
@@ -666,7 +676,7 @@ min(top_50_user_133)
 ```
 
 **Beschreibung:**
-Unsere Annahme stimmt also; User 133 hat viele Similarites mit dem Wert 0.8333... Da unsere Recommendations über Genres laufen, können wir uns anschauen, ob es da eine grosse Überschneidung gibt zwischen den Top50 Filmen und ihren Genres.
+Unsere Annahme stimmt also; User `133` hat viele Similarites mit dem Wert `0.8333333` Da unsere Recommendations über Genres laufen, können wir uns anschauen, ob es da eine grosse Überschneidung gibt zwischen den Top50 Filmen und ihren Genres.
 
 ```{r}
 top_50_user_133$title <- rownames(top_50_user_133)
@@ -677,9 +687,9 @@ head(top_50_user_133_genre,10)
 ```
 
 **Beschreibung:**
-Ja, es stimmt! Die Top50 Resultate vom User 133 besteht nur aus dem Filmen mit dem Genre Comedy und Drama und zwar immer beide zusammen. Die `0.8333333` entsteht somit aus der Summe der Bewertungen pro Genre für den User `133` und der Genreverteilung dieser Top50-Filme. 
+Ja, es stimmt! Die Top50 Resultate vom User 133 besteht nur aus dem Filmen mit dem Genre `Comedy` und `Drama` und zwar immer beide zusammen. Die `0.8333333` entsteht somit aus der Summe der Bewertungen pro Genre für den User `133` und der Genreverteilung dieser Top50-Filme. 
 
-Cosine Similarity vom Comedy-Drama `Doom Generation, The (1995)` (ID 34) und dem User `133` und überprüfen, dass es `0.8333333` gibt.
+Wir können die Cosine Similarity vom Film `Doom Generation, The (1995)` (Movie-ID 34) mit den Genres `Comedy` und `Drama` und dem User `133` und überprüfen, dass es `0.8333333` gibt.
 
 ```{r}
 coop::cosine(user_genre_mat[133, ], movie_genre_mat[34, ])
@@ -693,7 +703,7 @@ create_cleveland_plot(user_profiles)
 
 Rot sind unsere Recommendations und grün ist die Ground Truth. Wir sehen, dass der User 555 Triller, Drama, Comedy, Adventure und Action gern schaut und diese auch häufiger empfohlen bekommt. Dasselbe sehen wir mit User 133, welcher Drama liebt und dieses auch das häufigste Genre der empfohlenen Filme ist. Unser Recommender empfiehlt also Filme, welche zu den beiden Usern passen! 
 
-Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und meistens diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity, aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen werden, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
+Beim zweiten Nutzer sieht man klar, dass dieser Nutzer mehrheitlich auf zwei Genres fokussiert ist und meistens diese Genres geschaut hat. Dies macht auch die hohen Similarities im oberen Histogram für den Nutzer klar, weil er die meistgesehen Genres geschaut hat, so hat er auch mit den meisten Filmen eine hohe Similarity, aufgrund des ähnlichen Profils. Hier muss auch beachtet werden, dass Filme über meherere kombinierte Genres verfügen und deshalb auch Filme empfohlen bekommt, die bspw. Drama-Action sind, die in dieser Grafik auch als solche gewertet werden.
 
 Wir können für die Top20, 30, 40 und 50 (und noch mehr, damit wir das Verhalten des MSE besser verstehen) je den MSE über den User `133` und `555` berechnen.
 
@@ -729,7 +739,7 @@ p
 
 **Beschreibung:**
 
-Wir sehen, dass der MSE ca. leicht abnimmt, wenn das N von TopN grösser wird. Dies lässt sich dadurch erklären, dass es nicht immer eine perfekte Genre-Verteilung gibt für eine TopN-Liste. Desto mehr Möglichkeiten der Recommender hat, Empfehlungen zu machen, desto mehr nähert sich die Verteilung der Genres vom Recommender an die perfekte Verteilung an. Falls aber das N zu gross wird, nimmt der Fehler zu, da es nur noch Filme empfehlen kann, welche gar keine Überschneidung haben mit den "Lieblingsgenres" der Benutzer. Wir können uns das hier anschauen:
+Wir sehen, dass der MSE ca. leicht abnimmt, wenn das N von TopN grösser wird. Dies lässt sich dadurch erklären, dass es nicht immer eine perfekte Genre-Verteilung gibt für eine TopN-Liste. Desto mehr Möglichkeiten der Recommender hat, Empfehlungen zu machen, desto mehr nähert sich die Verteilung der Genres vom Recommender an die perfekte Genre-Verteilung des Users an. Falls aber das N zu gross wird, nimmt der Fehler zu, da der Recommender nur noch Filme empfehlen kann, welche gar keine Überschneidung haben mit den "Lieblingsgenres" der Benutzer. Wir können uns das hier anschauen:
 
 ```{r}
 top_n_intervall = c(10, 100, 200)
@@ -783,7 +793,7 @@ ggplot2::ggplot(user_watched_total, aes(x = user, y = liked)) +
 
 **Beschreibung:**
 
-Wenn wir einen Vegleich der Anzahl der Filme machen, die die User geliked haben, können wir auch feststellen, dass viel weniger Informationen über die Präferenz des Nutzers 133 vorhanden ist. Dies hat zur Folge, dass weniger Informationen in unser Recommender System als Input geliefert werden, deshalb vermuten wir, dass darum eher grössere Abweichungen zwischen dem empfohlenen Profil zum tatsächlich gesehenen Profil erkennbar sind. Ebenfalls wird duch diese wenigen guten Bewertungen das `genre-Profil` von User 133 sehr einseitig.
+Wenn wir einen Vegleich der Anzahl der Filme machen, die die User geliked haben, können wir auch feststellen, dass viel weniger Informationen über die Präferenz des Nutzers 133 vorhanden ist. Dies hat zur Folge, dass weniger Informationen in unser Recommender System als Input geliefert werden, deshalb vermuten wir, dass darum eher grössere Abweichungen zwischen dem empfohlenen Profil zum tatsächlich gesehenen Profil erkennbar sind. Ebenfalls wird duch diese wenigen guten Bewertungen das genre-Profil" von User 133 sehr einseitig.
 
 
 ```{r}
@@ -793,7 +803,7 @@ plot_user_profiles(user_genre_mat, user_idx = c(133, 555),
 ```
 
 **Beschreibung:**
-Wie wir sehen, ist das `genre-profil` vom User 133 viel weniger ausgepräft als vom User 555. 
+Das "genre-Profil" vom User `133` ist weniger ausgeprägt als vom User 555, da es nur "Spitzen" im Radarplot bei Drama und Comedy hat.
 
 ----------------------------------------------------------------------------------------------
 
