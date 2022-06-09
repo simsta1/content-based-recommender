@@ -720,7 +720,10 @@ for (i in 1:length(top_n_col_names)) {
 p<-ggplot(data=top_n_list_selected_users, aes(x=TopN, y=MSE)) +
   ggplot2::geom_bar(stat="identity") + 
   ggplot2::labs(title = "TopN MSE Distribution of Genres of Watched vs. Recommended movies.") +
-  ggplot2::theme_bw()
+  ggplot2::theme_bw() +
+  ggplot2::theme(panel.border = element_blank(), 
+                 axis.line = element_line())
+  
 p
 ```
 
@@ -750,7 +753,9 @@ for (i in 1:length(top_n_col_names)) {
 p<-ggplot(data=top_n_list_selected_users, aes(x=TopN, y=MSE)) +
   ggplot2::geom_bar(stat="identity") + 
   ggplot2::labs(title = "TopN MSE Distribution of Genres of Watched vs. Recommended movies.") +
-  ggplot2::theme_bw()
+  ggplot2::theme_bw() +
+  ggplot2::theme(panel.border = element_blank(), 
+                 axis.line = element_line())
 p
 ```
 
