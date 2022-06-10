@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 ```{r Imports, include=FALSE}
 INSTALL_LIBS = FALSE
 
@@ -225,13 +230,13 @@ BINARY_THRESHOLD <- 0
 # Create Binaray User-Genre Matrix
 user_genre_mat_binary <- ifelse(user_genre_mat > BINARY_THRESHOLD, 1, 0)
 random_idx <- sample(seq(1, dim(user_genre_mat_binary)[[1]]), 
-                        size = 8)
+                        size = 4)
 
 
 plot_user_profiles(user_genre_mat_binary, user_idx = random_idx, 
-                    sample_size = 8)
+                    sample_size = 5, n_cols = 5)
 plot_user_profiles(user_genre_mat, user_idx = random_idx, 
-                    sample_size = 8)
+                    sample_size = 5, n_cols = 5)
 ```
 
 
@@ -383,7 +388,7 @@ Es scheint so, als gäbe es keine großen Unterschiede zwischen den Nutzern. Das
 summary(as.numeric(Mask_sum$Sum))
 ```
 Die Statistik zeigt die wichtigsten Komponenten der Daten Minimum, Q1, Median, Mittelwert, Q3 und Maximum der Daten.
-Ausserdem sieht man hier auch, dass die Verteilung eher linksschief sein muss, da das Minimum weiter weg vom Q1 ist, als das Maximum vom Q3.
+Ausserdem sieht man hier auch, dass die Verteilung eher linksschief sein muss, da das Minimum weiter weg vom Q1 und Median ist, als das Maximum vom Q3 und Median.
 
 
 ```{r}
@@ -401,7 +406,7 @@ ggplot(Mask_sum, aes(y=Sum)) +
 
 **Beschreibung:**
 
-Der Plot unterstützt die Annahmen der statistischen Kennzahlen nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten. Aber in diesem Datensatz ist das nicht der Fall.
+Der Plot unterstützt die Annahmen der statistischen Kennzahlen nochmals. Mit Hilfe der Grafik können wir feststellen, dass wir die meisten Daten um 1600 haben. wir können auch sagen, dass dies eine Zahl ist, die sehr nahe an der maximalen Anzahl von Filmen (1664) liegt. wir haben viele Ausreißer in den unteren Werten. Der Minimalwert liegt bei 929. Es gibt also einen Nutzer, der 929 Filme nicht bewertet hat. Der höchste Wert liegt bei 1645. Das ist sehr verwunderlich, weil wir dachten, dass er bei 1664 liegen würde, weil es immer Leute geben sollte, die nie einen Film bewerten (z.B. neu hinzugefügte User). Aber in diesem Datensatz ist das nicht der Fall.
 
 
 ## 4. Top-N Empfehlungen
@@ -413,12 +418,6 @@ similarity_users <- MovieLenseMat_mask * similarity_matrix
 df <- melt(t(similarity_users[1:5,1:5]))
 
 colnames(df) <- c("x", "y", "value")
-ggplot(df, aes(x = x, y = y, fill = value)) +
-  geom_tile() + 
-  theme(axis.title.x=element_blank()
-        ) +
-  ggplot2::ggtitle('Genre-similarties for unseen movies for 5 selected Movies and Users.') +
-  ggplot2::ylab('User ID')
 
 df <- melt(t(similarity_users[1,]))
 
@@ -458,11 +457,8 @@ ggplot(df1, aes(x = x, y = y, fill = value)) +
 
 Wir betrachten hier oben verschiedene Visualisierungen über die Genre-Ähnlichkeiten für ungesehene Filme für verschiedene Nutzer.
 
-In der ersten Grafik sehen wir die ersten 5 Filme und User.
-
-In der zweiten Grafik sieht man, dass es für den User 1 entweder gar keine Ähnlichkeiten zwischen den Filmen und seinem Profil besteht oder er diese alle gesehen hat und durch den Negativabzug zu 0 wurden. Die weiteren Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1. Es könnte also sein, dass der User 1 die Filme nach ID anschaut (ggf. wurde die Movie-ID auch nach dem User 1 erzeugt?)
-
-Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen erhalten.
+In der ersten Grafik sieht man, dass es für den User 1 entweder gar keine Ähnlichkeiten zwischen den Filmen und seinem Profil besteht oder er diese alle gesehen hat und durch den Negativabzug zu 0 wurden. Die weiteren Linien, die aus der Ferne wie ein Barcode aussehen, sind Filme mit einer anderen Recommendation für den User 1. Es könnte also sein, dass der User 1 die Filme nach ID anschaut.
+Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Genre-Ähnlichkeiten für die ungesehenen Filme. Man kann hier sehen, dass alle User komplett unterschiedliche Empfehlungen erhalten. Im zweiten Plot sieht man User mit einem ähnlichen Verhalten analog zum User 1.
 
 
 ### 4.2. Dimension der Matrix für die Bewertung aller Filme prüfen.
@@ -470,6 +466,7 @@ Die letzte Abbildung ist eine Übersicht über die ersten 10 Nutzer und alle Gen
 dim(similarity_users)
 ```
 **Beschreibung**
+
 Diese Dimensionen der Similarity ergeben Sinn: 943 User, 1664 Filme.
 
 ### 4.3. Top-20 Listen pro Nutzer extrahieren.
@@ -490,6 +487,7 @@ fivenum(top_top20_recos_user_42$value)
 ```
 
 **Beschreibung:**
+
 Man kann anhand der Kennzahlen sehen, dass die Similarites sehr eng streuen. Die Range der Similarities reicht ist im Wertebereich von 0.68 - 0.77. Es war jedoch auch zu erwarten, dass der Wertebereich der Ähnlichkeiten von den Top-20 Empfehlungen hoch ausfallen, da sonst der Recommender nicht funktioniert (oder es keine Filme mehr gibt für diesen spezifischen User).
 
 ```{r}
@@ -501,6 +499,7 @@ expect_equal(all(top20_mean_group_size$group_size == 20), TRUE)
 ```
 
 **Beschreibung:**
+
 Wie erwartet, besteht die Top20 Liste für jeden User aus 20 Filmen.
 
 
@@ -509,7 +508,8 @@ Wie erwartet, besteht die Top20 Liste für jeden User aus 20 Filmen.
 top_n_intervall = c(10, 20, 50, 100)
 top_n_col_names = c('1. Top 10', '2. Top 20', '3. Top 50', '4. Top 100')
 #create data frame with 0 rows and 5 columns
-min_similarity_top_n <- data.frame(matrix(ncol = 1, nrow = length(row.names(similarity_users))))
+min_similarity_top_n <- data.frame(matrix(ncol = 1, 
+                                          nrow = length(row.names(similarity_users))))
 #provide column names
 colnames(min_similarity_top_n) <- c('User')
 min_similarity_top_n$User <- row.names(similarity_users)
@@ -528,20 +528,24 @@ for (i in 1:4) {
 
   min_similarity_top_n[,top_n_col_names[i]] <- min_top_n_recos$MinSimilarity
 }
-min_similarity_top_n_long <- pivot_longer(min_similarity_top_n, cols=all_of(top_n_col_names), names_to='TopN', values_to='MinSimilarity')
+min_similarity_top_n_long <- pivot_longer(min_similarity_top_n, 
+                                          cols=all_of(top_n_col_names), 
+                                          names_to='TopN', 
+                                          values_to='MinSimilarity')
 head(min_similarity_top_n_long)
 ```
 
 ```{r}
-# Notched boxplot, what is it?
 ggplot2::ggplot(min_similarity_top_n_long, ggplot2::aes(x=MinSimilarity)) + 
   ggplot2::geom_histogram(bins=50)+
   ggplot2::labs(title = "Min Similarity Distribution per Top N List")+
   ggplot2::facet_grid(TopN ~ .) +
-  ggplot2::theme_bw()
+  ggplot2::theme_bw() 
+  
 ```
 
 **Beschreibung:**
+
 Im oberen Plot sehen wir, dass der Modus der Mindest-Similarity abnimmt bei einem grösseren N bei der TopN Liste. Bei der Top100 sehen wir, dass die Mindest-Similarity bis under 0.4 fällt. Das führt also zu wahrscheinlich ungeeigneten Empfehlungen.
 
 
@@ -570,6 +574,7 @@ create_cleveland_plot(user_profiles)
 ```
 
 **Beschreibung:**
+
 Rot sind unsere Top20-Recommendations und grün ist die Ground Truth. Wir sehen, dass für die User 5, 25, 50 und 150, Filme empfohlen bekommt mit Genres, welche der User über mehrere Filme als gut bewertet hat.
 
 Aus der Distanz können wir auch den `mean squared error` bilden. Der MSE ist somit der Durchschnitt der `squared error` zwischen der Verteilung der geschauten Genres in Prozenten (ground truth) und der Verteilung der Genres der empfohlenen Filme in Prozenten. Es entspricht also der `squared distance` zwischen den grünen und roten Punkten im oberen Plot.
@@ -581,14 +586,19 @@ squared_errors <- create_recomm_truth_MSE(user_profiles)
 ```{r}
 p <-ggplot(data=squared_errors, aes(x=User, y=MSE)) +
   ggplot2::geom_bar(stat="identity") + 
-  ggplot2::labs(title = "MSE between the Distribution of Genres of watched vs. recommended movies.") +
-  ggplot2::theme_bw()
+  ggplot2::labs(title = "MSE between Genres of watched vs. recommended movies.") +
+  ggplot2::theme_bw() + 
+  ggplot2::theme(panel.border = element_blank(),
+                 panel.grid.major = element_blank(),
+                 axis.line = element_line(colour = "black"))
+  
 p
 mean(squared_errors$MSE)
    
 ```
 
 **Beschreibung:**
+
 Wir sehen also, dass wir uns überall in einem kleinen Bereich aufhalten. Pro User und Genre hat es im Schnitt ca. einen MSE von 0.0045. Interessant ist der hohe Wert beim User 50.
 
 ```{r}
@@ -637,10 +647,12 @@ ggplot2::ggplot(data = top_n_list_selected_users,
                 ggplot2::aes(x = factor(User), y = Similarity, fill=factor(TopN))) + 
   ggplot2::geom_boxplot() +
   ggplot2::scale_fill_brewer(palette = "Blues") + 
-  labs(title = "Similarity Distribution for selected Users and selected TopN List") +
+  labs(title = "Similarity Distribution for selected Users and selected TopN List",
+       fill = "Top-n") +
   ggplot2::theme_bw() +
   ggplot2::theme(panel.border = element_blank(), 
-                 axis.line = element_line())
+                 axis.line = element_line()) +
+  ggplot2::xlab("User")
 ```
 
 **Beschreibung:**
@@ -648,7 +660,7 @@ ggplot2::ggplot(data = top_n_list_selected_users,
 Wir sehen, dass das Minimum der Similarities mit mehr Empfehlungen abnimmt. Dies ergibt auch Sinn, da die TopN-Empfehlungen die Filme empfiehlt, welche die höchste Genre-Similarity haben zu Filmen, welche man als gut bewertet hat. Somit werden bei einem höheren N auch Filme empfohlen mit einer niedrigeren Similarity. 
 Hier muss man also aufpassen, dass man ein geschicktes N wählt: Ein User soll viele Filme empfohlen bekommen, welche aber auch für den User passen. 
 
-Eine Möglichkeit wäre, dass man das N von TopN pro User anhand einer mindest-Similarity berechnet. N soll man also so wählen, dass die tiefeste Similarity für den User nicht einen Threshold unterschreitet. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser mindest-Similarity sind.
+Eine Möglichkeit wäre, dass man das N von TopN pro User anhand einer mindest-Similarity berechnet. N soll man also so wählen, dass die tiefeste Similarity für den User nicht einen Threshold unterschreitet. Somit soll jeder User mindestens N Filme empfohlen bekommen, aber danach nur Filme, welche über dieser mindest-Similarity sind. Man könnte hierbei auch verschiedene Sets zur Offline-Evaluation verwenden und anhand von Top-N Metriken entscheiden, welche Threshold für User sich am besten eignen.
 
 
 ```{r}
@@ -676,6 +688,7 @@ min(top_50_user_133)
 ```
 
 **Beschreibung:**
+
 Unsere Annahme stimmt also; User `133` hat viele Similarites mit dem Wert `0.8333333` Da unsere Recommendations über Genres laufen, können wir uns anschauen, ob es da eine grosse Überschneidung gibt zwischen den Top50 Filmen und ihren Genres.
 
 ```{r}
@@ -687,6 +700,7 @@ head(top_50_user_133_genre,10)
 ```
 
 **Beschreibung:**
+
 Ja, es stimmt! Die Top50 Resultate vom User 133 besteht nur aus dem Filmen mit dem Genre `Comedy` und `Drama` und zwar immer beide zusammen. Die `0.8333333` entsteht somit aus der Summe der Bewertungen pro Genre für den User `133` und der Genreverteilung dieser Top50-Filme. 
 
 Wir können die Cosine Similarity vom Film `Doom Generation, The (1995)` (Movie-ID 34) mit den Genres `Comedy` und `Drama` und dem User `133` und überprüfen, dass es `0.8333333` gibt.
@@ -803,6 +817,7 @@ plot_user_profiles(user_genre_mat, user_idx = c(133, 555),
 ```
 
 **Beschreibung:**
+
 Das "genre-Profil" vom User `133` ist weniger ausgeprägt als vom User 555, da es nur "Spitzen" im Radarplot bei Drama und Comedy hat.
 
 ----------------------------------------------------------------------------------------------
